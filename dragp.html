@@ -64,9 +64,9 @@
     </div>
   
     <script type="text/javascript" src="./zlib.js-develop/bin/gunzip.min.js"></script>
-    <script type="text/javascript" src="./zlib.js-develop/bin/unzip.min.js"></script>
     <script type="text/javascript" src="./zlib.js-develop/bin/gzip.min.js"></script>
-    <script type="text/javascript" src="./zlib.js-develop/bin/zip.min.js"></script>
+    <!-- <script type="text/javascript" src="https://github.com/imaya/zlib.js/blob/develop/bin/gunzip.dev.min.js"></script>
+    <script type="text/javascript" src="https://github.com/imaya/zlib.js/blob/develop/bin/gzip.dev.min.js"></script> -->
     <script type="text/javascript">
 
     let colorBaseMap = [
@@ -396,7 +396,8 @@
             tmp = nbtarray[i + taglen + len];
             data[++n] = {
               type: 1,
-              name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
+              // name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
+              name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
               data: nbtarray[i + taglen + len] & 0b1000000 ? -0x0100 + tmp : tmp,
               binary: nbtarray.slice(i, i + taglen + 1 + len)
             };
@@ -408,7 +409,8 @@
             tmp = nbtarray[i + taglen + len] << 8 + nbtarray[i + taglen + 1 + len];
             data[++n] = {
               type: 2,
-              name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
+              // name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
+              name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
               data: nbtarray[i + taglen + len] & 0b1000000 ? -0b010000 + tmp : tmp,
               binary: nbtarray.slice(i, i + taglen + 2 + len)
             };
@@ -420,7 +422,8 @@
             tmp = nbtarray[i + taglen + len] << 24 + nbtarray[i + taglen + 1 + len] << 16 + nbtarray[i + taglen + 2 + len] << 8 + nbtarray[i + taglen + 3 + len];
             data[++n] = {
               type: 3,
-              name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
+              // name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
+              name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
               data: nbtarray[i + taglen + len] & 0b1000000 ? -0b0100000000 + tmp : tmp,
               binary: nbtarray.slice(i, i + taglen + 4 + len)
             };
@@ -432,7 +435,8 @@
             tmp = nbtarray[i + taglen + len] << 56 + nbtarray[i + taglen + 1 + len] << 48 + nbtarray[i + taglen + 2 + len] << 40 + nbtarray[i + taglen + 3 + len] << 32 + nbtarray[i + taglen + 4 + len] << 24 + nbtarray[i + taglen + 5 + len] << 16 + nbtarray[i + taglen + 6 + len] << 8 + nbtarray[i + taglen + 7 + len];
             data[++n] = {
               type: 4,
-              name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
+              // name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
+              name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
               data: nbtarray[i + taglen + len] & 0b1000000 ? -0b010000000000000000 + tmp : tmp,
               binary: nbtarray.slice(i, i + taglen + 8 + len)
             };
@@ -443,7 +447,8 @@
             len = tagid===null ? nbtarray[i + 1] << 8 + nbtarray[i + 2] : 0;
             data[++n] = {
               type: 5,
-              name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
+              // name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
+              name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
               data: (nbtarray[i + taglen + len] & 0b10000000 ? -1 : 1)*Math.exp(2, (nbtarray[i + taglen + len] & 0b01111111) << 1 + nbtarray[i + taglen + 1 + len] >> 7 - 140)*(1 << 23 + (nbtarray[i + taglen + 1 + len] & 0b01111111) << 16 + nbtarray[i + taglen + 2 + len] << 8 + nbtarray[i + taglen + 3 + len]),
               binary: nbtarray.slice(i, i + taglen + 4 + len)
             };
@@ -454,7 +459,8 @@
             len = tagid===null ? nbtarray[i + 1] << 8 + nbtarray[i + 2] : 0;
             data[++n] = {
               type: 6,
-              name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
+              // name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
+              name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
               data: (nbtarray[i + taglen + len] & 0b10000000 ? -1 : 1)*Math.exp(2, (nbtarray[i + taglen + len] & 0b01111111) << 4 + nbtarray[i + taglen + 1 + len] >> 4 - 1079)*(1 << 52 + (nbtarray[i + taglen + 1 + len] & 0b00001111) << 48 + nbtarray[i + taglen + 2 + len] << 40 + nbtarray[i + taglen + 3 + len] << 32 + nbtarray[i + taglen + 4 + len] << 24 + nbtarray[i + taglen + 5 + len] << 16 + nbtarray[i + taglen + 6 + len] << 8 + nbtarray[i + taglen + 7 + len]),
               binary: nbtarray.slice(i, i + taglen + 8 + len)
             };
@@ -466,7 +472,8 @@
             tmp = nbtarray[i + taglen + len] << 24 + nbtarray[i + taglen + 1 + len] << 16 + nbtarray[i + taglen + 2 + len] << 8 + nbtarray[i + taglen + 3 + len];
             data[++n] = {
               type: 7,
-              name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
+              // name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
+              name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
               data: nbtarray.slice(i + taglen + 4 + len, i + taglen + 4 + len + tmp),
               binary: nbtarray.slice(i, i + taglen + 4 + len + tmp)
             };
@@ -478,8 +485,10 @@
             tmp = nbtarray[i + taglen + len] << 8 + nbtarray[i + taglen + 1 + len];
             data[++n] = {
               type: 8,
-              name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
-              data: new TextDecoder().decode(nbtarray.slice(i + taglen + 2 + len, i + taglen + 2 + len + tmp)),
+              // name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
+              name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
+              // data: new TextDecoder().decode(nbtarray.slice(i + taglen + 2 + len, i + taglen + 2 + len + tmp)),
+              data: nbtarray.slice(i + taglen + 2 + len, i + taglen + 2 + len + tmp).toString(),
               binary: nbtarray.slice(i, i + taglen + 2 + len + tmp)
             };
             i = i + taglen + 2 + len + tmp;
@@ -498,7 +507,8 @@
             }
             data[++n] = {
               type: 10,
-              name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
+              // name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
+              name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
               data: tmp
             };
             i = i + taglen + len + 5 + listcount;
@@ -510,7 +520,8 @@
             if (tmp[0] == null) return tmp;
             data[++n] = {
               type: 10,
-              name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
+              // name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
+              name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
               data: tmp[0]
             };
             i = i + taglen + len + tmp[1];
@@ -521,7 +532,8 @@
             tmp = nbtarray[i + taglen + len] << 24 + nbtarray[i + taglen + 1 + len] << 16 + nbtarray[i + taglen + 2 + len] << 8 + nbtarray[i + taglen + 3 + len];
             data[++n] = {
               type: 11,
-              name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
+              // name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
+              name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
               data: (new Array(tmp)).map((element, index) => nbtarray[i + taglen + 4 + len + index*4] << 24 + nbtarray[i + taglen + 5 + len + index*4] << 16 + nbtarray[i + taglen + 6 + len + index*4] << 8 + nbtarray[i + taglen + 7 + len + index*4]),
               binary: nbtarray.slice(i, i + taglen + 4 + len + tmp*4)
             };
@@ -540,6 +552,88 @@
         }
       });
       return data.concat([0]);
+    }
+
+    let crc_table = new Uint32Array(256, 0);
+
+    let crc_table_computed = 0;
+
+    function make_crc_table() {
+      let c = 0n;
+      let n, k;
+      for (n = 0; n < 256; n++) {
+        c = n;
+        for (k = 0; k < 8; k++) {
+          if (c & 1) {
+            c = 0xedb88320n ^ (c >> 1);
+          } else {
+            c = c >> 1;
+          }
+        }
+        crc_table[n] = c;
+      }
+      crc_table_computed = 1;
+    }
+
+    function update_crc(crc, buf, len) {
+      c = crc ^ 0xffffffffn;
+      let n;
+
+      if (!crc_table_computed)
+        make_crc_table();
+      for (n = 0; n < len; n++) {
+        c = crc_table[(c ^ buf[n]) & 0xff] ^ (c >> 8);
+      }
+      return c ^ 0xffffffffn;
+    }
+
+    function crc(buf, len) {
+      return update_crc(0n, buf, len);
+    }
+
+    function gunzip(binary) {
+      let ID1 = binary[0];
+      let ID2 = binary[1];
+      let CM = binary[2];
+      let FLG = binary[3];
+      let MTIME = binary[4] << 3 | binary[5] << 2 | binary[6] << 1 | binary[7];
+      let XFL = binary[8];
+      let OS = binary[9];
+      if (ID1 !== 0x1F) return [null, "ID1"];
+      if (ID2 !== 0x8B) return [null, "ID2"];
+      if (!(CM & (1 << 7))) return [null, "CM"];
+      let FTEXT = FLG & 1;
+      let FHCRC = FLG & (1 << 1);
+      let FEXTRA = FLG & (1 << 2);
+      let FNAME = FLG & (1 << 3);
+      let FCOMMENT = FLG & (1 << 4);
+      if (FLG & (0b111 << 5)) return [null, "FLG RESERVED"]
+      binary = binary.slice(10);
+      let exFeild = FEXTRA ? () => {
+        let tmp = binary.slice(1, binary[0] + 1)
+        binary = binary.slice(binary[0] + 1);
+        return [new TextDecoder().decode(tmp[0]), new TextDecoder().decode(tmp[1]), new TextDecoder().decode(tmp.slice(4, (tmp[2] << 8) | tmp[3] + 4))];
+      } : null;
+      let fileName = FNAME ? () => {  //  it may be good way to change other way to get strings and the length;
+        let tmp = "";
+        for (let i = 0; binary[i] !== 0; i++) {
+          tmp +=  new TextDecoder().decode(binary[i]);
+        }
+        binary = binary.slice(tmp.length);
+        return tmp;
+      } : null;
+      let fileComment = FCOMMENT ? () => {  //  -------------------------------------------------------
+        let tmp = "";
+        for (let i = 0; binary[i] !== 0; i++) {
+          tmp +=  new TextDecoder().decode(binary[i]);
+        }
+        binary = binary.slice(tmp.length);
+        return tmp;
+      } : null;
+      let CRC16 = FHCRC ? () => {
+        let tmp = CRC32();
+        binary = binary.slice(2);
+      } : null;
     }
 
     document.getElementById("download_button").onclick = (evt) => {
