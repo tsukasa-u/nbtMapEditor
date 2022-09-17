@@ -376,7 +376,7 @@
         ev.dataTransfer.clearData();
       }
     }
-//Big Endian
+//Big Endiannes
     function nbt2json(nbtarray, tagid=null) {
       console.log(nbtarray);
       let i = 0, n = 0, len, tmp, taglen;
@@ -554,7 +554,7 @@
       return data.concat([0]);
     }
 
-    let crc_table = new Uint32Array(256, 0);
+    let crc_table = new Uint32Array(256);
 
     let crc_table_computed = 0;
 
@@ -590,7 +590,7 @@
     function crc(buf, len) {
       return update_crc(0n, buf, len);
     }
-
+// little endiannes
     function gunzip(binary) {
       let ID1 = binary[0];
       let ID2 = binary[1];
@@ -607,33 +607,55 @@
       let FEXTRA = FLG & (1 << 2);
       let FNAME = FLG & (1 << 3);
       let FCOMMENT = FLG & (1 << 4);
-      if (FLG & (0b111 << 5)) return [null, "FLG RESERVED"]
+      if (FLG & (0b111 << 5)) return [null, "FLG RESERVED"];
+      let crcBuf = FHCRC ? binary.slice(0, 10) : null;
       binary = binary.slice(10);
       let exFeild = FEXTRA ? () => {
-        let tmp = binary.slice(1, binary[0] + 1)
+        let tmp = binary.slice(1, binary[0] + 1);
+        if (FHCRC) crcBuf = crcBuf.concat(binary.slice(0, binary[0] + 1));
         binary = binary.slice(binary[0] + 1);
-        return [new TextDecoder().decode(tmp[0]), new TextDecoder().decode(tmp[1]), new TextDecoder().decode(tmp.slice(4, (tmp[2] << 8) | tmp[3] + 4))];
+        // return [new TextDecoder().decode(tmp[0]), new TextDecoder().decode(tmp[1]), new TextDecoder().decode(tmp.slice(4, (tmp[2] << 8) | tmp[3] + 4))];
+        return [[tmp[0]].toString(), [tmp[1]].toString(), tmp.slice(4, (tmp[3] << 8) | tmp[2] + 4).toString()];
       } : null;
       let fileName = FNAME ? () => {  //  it may be good way to change other way to get strings and the length;
         let tmp = "";
         for (let i = 0; binary[i] !== 0; i++) {
-          tmp +=  new TextDecoder().decode(binary[i]);
+          // tmp +=  new TextDecoder().decode(binary[i]);
+          tmp += binary[i].toString();
         }
+        if (FHCRC) crcBuf = crcBuf.concat(binary.slice(0, tmp.length));
         binary = binary.slice(tmp.length);
         return tmp;
       } : null;
       let fileComment = FCOMMENT ? () => {  //  -------------------------------------------------------
         let tmp = "";
         for (let i = 0; binary[i] !== 0; i++) {
-          tmp +=  new TextDecoder().decode(binary[i]);
+          // tmp +=  new TextDecoder().decode(binary[i]);
+          tmp += binary[i].toString();
         }
+        if (FHCRC) crcBuf = crcBuf.concat(binary.slice(0, tmp.length));
         binary = binary.slice(tmp.length);
         return tmp;
       } : null;
-      let CRC16 = FHCRC ? () => {
-        let tmp = CRC32();
+      if (FHCRC) {
+        let tmp = update_crc(binary[1] << 8 | binary[0] ,crcBuf, crcBuf.length);
+        if (tmp & 0xffff !== 0) return [null, "CRC16"];
         binary = binary.slice(2);
-      } : null;
+      }
+      let previous;
+      do {
+        let BFINAL = (binary[0] & 0b10000000) >> 7;
+        let BTYPE = (binary[0] & 0b01100000) >> 5;
+        if (BTYPE == 0) {
+          previous = binary.slice(0, 4 + binary[1] << 8 | binary[0]);
+        } else if (BTYPE == 0b01 || BTYPE == 0b10) {
+          if (BTYPE == 0b10) {
+
+          }
+        } else {
+          // error
+        }
+      } while(1);
     }
 
     document.getElementById("download_button").onclick = (evt) => {
