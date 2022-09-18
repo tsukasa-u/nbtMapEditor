@@ -585,6 +585,7 @@
     function json2nbt(jsondata) {
       let data = Object.keys(jsondata).reduce((previous, current, index) => {
         if (jsondata[current].type == 10 || jsondata[current].type == 9) {
+          previous.concat(jsondata[current].binary);
           return previous.concat(json2nbt(jsondata[current].data));
         } else {
           return previous.concat(jsondata[current].binary);
