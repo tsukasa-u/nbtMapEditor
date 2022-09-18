@@ -60,7 +60,7 @@
     </div>
     <div id="centerArea">
       <h2>file download</h2>
-      <button type="button" id="download_button">DOWNLOAD NBT ZIPED FILE</button>
+      <a id="download_button" href="#" download="test.txt">DOWNLOAD NBT ZIPED FILE</a>
     </div>
   
     <script type="text/javascript" src="./zlib.js-develop/bin/gunzip.min.js"></script>
@@ -200,17 +200,18 @@
     }
 
     function searchColorId(src) {
-      
+      let colorID = [];
       for (let i = 0; i < src.data.length; i += 4) {
         // src.data[i];
         // src.data[i + 1];
         // src.data[i + 2];
         // src.data[i + 3];
-        let colorID = colorMap.reduce((previous, current, index) => {
+         colorID.push(colorMap.reduce((previous, current, index) => {
           let d = CIE2000(RGB2LAB([src.slice(i, i + 3)]), RGB2LAB[colorID[index]]);
           return previous[1] > d ? [index, d] : previous;
-        }, [-1, 9999]);
+        }, [-1, 9999]));
       }
+      return colorID;
     }
 
     function dragOverHandlerNBT(ev) {
@@ -248,7 +249,11 @@
             let reader = new FileReader();
             reader.readAsArrayBuffer(item.getAsFile());
             reader.onload = function() {
-              data = new Promise( (resolve, reject) => {return resolve(reader.result)})
+              nbt_map_data = new Promise( (resolve, reject) => {return resolve(reader.result)})
+              .then((e) => {
+                console.log(e);
+                return new Uint8Array(e);
+              })
               .then((e) => {
                 console.log(e);
                 return new Zlib.Gunzip(e);
@@ -266,39 +271,11 @@
                 document.getElementById("nbt_zone").innerHTML = JSON.stringify(e[0]);
                 return e[0];
               });
+              console.log(nbt_map_data);
             };
-
-            // nbt_map_data = new Promise( (resolve, reject) => {return resolve(item.getAsFile())})
-            //   .then((e) => {
-            //     console.log(e);
-            //     return e.arrayBuffer();
-            //   })
-            //   .then((e) => {
-            //     console.log(e);
-            //     return new Zlib.Gunzip(e);
-            //   })
-            //   .then((e) => {
-            //     console.log(e);
-            //     return e.decompress();
-            //   })
-            //   .then((e) => {
-            //     console.log(e);
-            //     return nbt2json(e);
-            //   })
-            //   .then((e) => {
-            //     console.log(e);
-            //     document.getElementById("nbt_zone").innerHTML = JSON.stringify(e[0]);
-            //     return e[0];
-            //   });
-
-            // let plain  = new Zlib.Gunzip(item.getAsFile().arrayBuffer()).decompress();
-            // console.log(plain);
-            // nbt_map_data = nbt2json(plain)[0];
-            // document.getElementById("nbt_zone").innerHTML = JSON.stringify(nbt_map_data);
           }
         }
       } else {
-        // Use DataTransfer interface to access the file(s)
         for (let i = 0; i < ev.dataTransfer.files.length; i++) {
           console.log('... file[' + i + '].name = ' + ev.dataTransfer.files[i].name);
         }
@@ -346,7 +323,7 @@
                 ctx.height = image.height;
                 ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, canvasStyle.width, canvasStyle.width*image.height/image.width);
                 // console.log(canvas.toDataURL('image/png'));
-                src_map_data = ctx.getImageData(0, 0, image.width, image.height);
+                src_map_data = searchColorId(ctx.getImageData(0, 0, image.width, image.height));
                 // console.log(src_map_data);
               };
             } else {
@@ -378,26 +355,26 @@
     }
 //Big Endiannes
     function nbt2json(nbtarray, tagid=null) {
-      console.log(nbtarray);
+      // console.log(nbtarray);
       let i = 0, n = 0, len, tmp, taglen;
       let data = {};
       while(tagid===null || (tagid!==null && n==0)) {
-        console.log(nbtarray[i]);
-        if (nbtarray[i]==undefined) return [null, -1];
+        // console.log(i);
+        if (nbtarray[i]===undefined) return [null, -1];
         switch (tagid===null ? nbtarray[i] : tagid) {
           case 0 :
             i++;
-            console.log("f");
+            // console.log("f");
             return [data, i];
             // break;
           case 1 :
             taglen = tagid===null ? 3 : 0
-            len = tagid===null ? nbtarray[i + 1] << 8 + nbtarray[i + 2] : 0;
+            len = tagid===null ? nbtarray[i + 1] << 8 | nbtarray[i + 2] : 0;
             tmp = nbtarray[i + taglen + len];
             data[++n] = {
               type: 1,
-              // name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
-              name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
+              name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
+              // name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
               data: nbtarray[i + taglen + len] & 0b1000000 ? -0x0100 + tmp : tmp,
               binary: nbtarray.slice(i, i + taglen + 1 + len)
             };
@@ -405,12 +382,12 @@
             break;
           case 2 :
             taglen = tagid===null ? 3 : 0
-            len = tagid===null ? nbtarray[i + 1] << 8 + nbtarray[i + 2] : 0;
+            len = tagid===null ? nbtarray[i + 1] << 8 | nbtarray[i + 2] : 0;
             tmp = nbtarray[i + taglen + len] << 8 + nbtarray[i + taglen + 1 + len];
             data[++n] = {
               type: 2,
-              // name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
-              name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
+              name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
+              // name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
               data: nbtarray[i + taglen + len] & 0b1000000 ? -0b010000 + tmp : tmp,
               binary: nbtarray.slice(i, i + taglen + 2 + len)
             };
@@ -418,12 +395,12 @@
             break;
           case 3 :
             taglen = tagid===null ? 3 : 0
-            len = tagid===null ? nbtarray[i + 1] << 8 + nbtarray[i + 2] : 0;
+            len = tagid===null ? nbtarray[i + 1] << 8 | nbtarray[i + 2] : 0;
             tmp = nbtarray[i + taglen + len] << 24 + nbtarray[i + taglen + 1 + len] << 16 + nbtarray[i + taglen + 2 + len] << 8 + nbtarray[i + taglen + 3 + len];
             data[++n] = {
               type: 3,
-              // name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
-              name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
+              name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
+              // name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
               data: nbtarray[i + taglen + len] & 0b1000000 ? -0b0100000000 + tmp : tmp,
               binary: nbtarray.slice(i, i + taglen + 4 + len)
             };
@@ -431,12 +408,12 @@
             break;
           case 4 :
             taglen = tagid===null ? 3 : 0
-            len = tagid===null ? nbtarray[i + 1] << 8 + nbtarray[i + 2] : 0;
+            len = tagid===null ? nbtarray[i + 1] << 8 | nbtarray[i + 2] : 0;
             tmp = nbtarray[i + taglen + len] << 56 + nbtarray[i + taglen + 1 + len] << 48 + nbtarray[i + taglen + 2 + len] << 40 + nbtarray[i + taglen + 3 + len] << 32 + nbtarray[i + taglen + 4 + len] << 24 + nbtarray[i + taglen + 5 + len] << 16 + nbtarray[i + taglen + 6 + len] << 8 + nbtarray[i + taglen + 7 + len];
             data[++n] = {
               type: 4,
-              // name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
-              name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
+              name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
+              // name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
               data: nbtarray[i + taglen + len] & 0b1000000 ? -0b010000000000000000 + tmp : tmp,
               binary: nbtarray.slice(i, i + taglen + 8 + len)
             };
@@ -444,11 +421,11 @@
             break;
           case 5 :
             taglen = tagid===null ? 3 : 0
-            len = tagid===null ? nbtarray[i + 1] << 8 + nbtarray[i + 2] : 0;
+            len = tagid===null ? nbtarray[i + 1] << 8 | nbtarray[i + 2] : 0;
             data[++n] = {
               type: 5,
-              // name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
-              name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
+              name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
+              // name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
               data: (nbtarray[i + taglen + len] & 0b10000000 ? -1 : 1)*Math.exp(2, (nbtarray[i + taglen + len] & 0b01111111) << 1 + nbtarray[i + taglen + 1 + len] >> 7 - 140)*(1 << 23 + (nbtarray[i + taglen + 1 + len] & 0b01111111) << 16 + nbtarray[i + taglen + 2 + len] << 8 + nbtarray[i + taglen + 3 + len]),
               binary: nbtarray.slice(i, i + taglen + 4 + len)
             };
@@ -456,11 +433,11 @@
             break;
           case 6 :
             taglen = tagid===null ? 3 : 0
-            len = tagid===null ? nbtarray[i + 1] << 8 + nbtarray[i + 2] : 0;
+            len = tagid===null ? nbtarray[i + 1] << 8 | nbtarray[i + 2] : 0;
             data[++n] = {
               type: 6,
-              // name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
-              name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
+              name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
+              // name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
               data: (nbtarray[i + taglen + len] & 0b10000000 ? -1 : 1)*Math.exp(2, (nbtarray[i + taglen + len] & 0b01111111) << 4 + nbtarray[i + taglen + 1 + len] >> 4 - 1079)*(1 << 52 + (nbtarray[i + taglen + 1 + len] & 0b00001111) << 48 + nbtarray[i + taglen + 2 + len] << 40 + nbtarray[i + taglen + 3 + len] << 32 + nbtarray[i + taglen + 4 + len] << 24 + nbtarray[i + taglen + 5 + len] << 16 + nbtarray[i + taglen + 6 + len] << 8 + nbtarray[i + taglen + 7 + len]),
               binary: nbtarray.slice(i, i + taglen + 8 + len)
             };
@@ -468,12 +445,12 @@
             break;
           case 7 :
             taglen = tagid===null ? 3 : 0
-            len = tagid===null ? nbtarray[i + 1] << 8 + nbtarray[i + 2] : 0;
+            len = tagid===null ? nbtarray[i + 1] << 8 | nbtarray[i + 2] : 0;
             tmp = nbtarray[i + taglen + len] << 24 + nbtarray[i + taglen + 1 + len] << 16 + nbtarray[i + taglen + 2 + len] << 8 + nbtarray[i + taglen + 3 + len];
             data[++n] = {
               type: 7,
-              // name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
-              name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
+              name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
+              // name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
               data: nbtarray.slice(i + taglen + 4 + len, i + taglen + 4 + len + tmp),
               binary: nbtarray.slice(i, i + taglen + 4 + len + tmp)
             };
@@ -481,21 +458,21 @@
             break;
           case 8 :
             taglen = tagid===null ? 3 : 0
-            len = tagid===null ? nbtarray[i + 1] << 8 + nbtarray[i + 2] : 0;
+            len = tagid===null ? nbtarray[i + 1] << 8 | nbtarray[i + 2] : 0;
             tmp = nbtarray[i + taglen + len] << 8 + nbtarray[i + taglen + 1 + len];
             data[++n] = {
               type: 8,
-              // name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
-              name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
-              // data: new TextDecoder().decode(nbtarray.slice(i + taglen + 2 + len, i + taglen + 2 + len + tmp)),
-              data: nbtarray.slice(i + taglen + 2 + len, i + taglen + 2 + len + tmp).toString(),
+              name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
+              // name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
+              data: new TextDecoder().decode(nbtarray.slice(i + taglen + 2 + len, i + taglen + 2 + len + tmp)),
+              // data: nbtarray.slice(i + taglen + 2 + len, i + taglen + 2 + len + tmp).toString(),
               binary: nbtarray.slice(i, i + taglen + 2 + len + tmp)
             };
             i = i + taglen + 2 + len + tmp;
             break;
           case 9 :
             taglen = tagid===null ? 3 : 0
-            len = tagid===null ? nbtarray[i + 1] << 8 + nbtarray[i + 2] : 0;
+            len = tagid===null ? nbtarray[i + 1] << 8 | nbtarray[i + 2] : 0;
             tmp = new Array(0);
             let count = nbtarray[i + taglen+ 1 + len ] << 24 + nbtarray[i + taglen + 2 + len] << 16 + nbtarray[i + taglen + 3 + len] << 8 + nbtarray[i + taglen + 4 + len];
             let redata = [null, 0];
@@ -507,33 +484,33 @@
             }
             data[++n] = {
               type: 10,
-              // name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
-              name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
+              name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
+              // name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
               data: tmp
             };
             i = i + taglen + len + 5 + listcount;
             break;
           case 10 :
             taglen = tagid===null ? 3 : 0
-            len = tagid===null ? nbtarray[i + 1] << 8 + nbtarray[i + 2] : 0;
+            len = tagid===null ? nbtarray[i + 1] << 8 | nbtarray[i + 2] : 0;
             tmp = nbt2json(nbtarray.slice(i + taglen + len));
             if (tmp[0] == null) return tmp;
             data[++n] = {
               type: 10,
-              // name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
-              name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
+              name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
+              // name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
               data: tmp[0]
             };
             i = i + taglen + len + tmp[1];
             break;
           case 11 :
             taglen = tagid===null ? 3 : 0
-            len = tagid===null ? nbtarray[i + 1] << 8 + nbtarray[i + 2] : 0;
+            len = tagid===null ? nbtarray[i + 1] << 8 | nbtarray[i + 2] : 0;
             tmp = nbtarray[i + taglen + len] << 24 + nbtarray[i + taglen + 1 + len] << 16 + nbtarray[i + taglen + 2 + len] << 8 + nbtarray[i + taglen + 3 + len];
             data[++n] = {
               type: 11,
-              // name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
-              name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
+              name: new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len)),
+              // name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
               data: (new Array(tmp)).map((element, index) => nbtarray[i + taglen + 4 + len + index*4] << 24 + nbtarray[i + taglen + 5 + len + index*4] << 16 + nbtarray[i + taglen + 6 + len + index*4] << 8 + nbtarray[i + taglen + 7 + len + index*4]),
               binary: nbtarray.slice(i, i + taglen + 4 + len + tmp*4)
             };
@@ -554,124 +531,128 @@
       return data.concat([0]);
     }
 
-    let crc_table = new Uint32Array(256);
+//     let crc_table = new Uint32Array(256);
 
-    let crc_table_computed = 0;
+//     let crc_table_computed = 0;
 
-    function make_crc_table() {
-      let c = 0n;
-      let n, k;
-      for (n = 0; n < 256; n++) {
-        c = n;
-        for (k = 0; k < 8; k++) {
-          if (c & 1) {
-            c = 0xedb88320n ^ (c >> 1);
-          } else {
-            c = c >> 1;
-          }
-        }
-        crc_table[n] = c;
-      }
-      crc_table_computed = 1;
-    }
+//     function make_crc_table() {
+//       let c = 0n;
+//       let n, k;
+//       for (n = 0; n < 256; n++) {
+//         c = n;
+//         for (k = 0; k < 8; k++) {
+//           if (c & 1) {
+//             c = 0xedb88320n ^ (c >> 1);
+//           } else {
+//             c = c >> 1;
+//           }
+//         }
+//         crc_table[n] = c;
+//       }
+//       crc_table_computed = 1;
+//     }
 
-    function update_crc(crc, buf, len) {
-      c = crc ^ 0xffffffffn;
-      let n;
+//     function update_crc(crc, buf, len) {
+//       c = crc ^ 0xffffffffn;
+//       let n;
 
-      if (!crc_table_computed)
-        make_crc_table();
-      for (n = 0; n < len; n++) {
-        c = crc_table[(c ^ buf[n]) & 0xff] ^ (c >> 8);
-      }
-      return c ^ 0xffffffffn;
-    }
+//       if (!crc_table_computed)
+//         make_crc_table();
+//       for (n = 0; n < len; n++) {
+//         c = crc_table[(c ^ buf[n]) & 0xff] ^ (c >> 8);
+//       }
+//       return c ^ 0xffffffffn;
+//     }
 
-    function crc(buf, len) {
-      return update_crc(0n, buf, len);
-    }
-// little endiannes
-    function gunzip(binary) {
-      let ID1 = binary[0];
-      let ID2 = binary[1];
-      let CM = binary[2];
-      let FLG = binary[3];
-      let MTIME = binary[4] << 3 | binary[5] << 2 | binary[6] << 1 | binary[7];
-      let XFL = binary[8];
-      let OS = binary[9];
-      if (ID1 !== 0x1F) return [null, "ID1"];
-      if (ID2 !== 0x8B) return [null, "ID2"];
-      if (!(CM & (1 << 7))) return [null, "CM"];
-      let FTEXT = FLG & 1;
-      let FHCRC = FLG & (1 << 1);
-      let FEXTRA = FLG & (1 << 2);
-      let FNAME = FLG & (1 << 3);
-      let FCOMMENT = FLG & (1 << 4);
-      if (FLG & (0b111 << 5)) return [null, "FLG RESERVED"];
-      let crcBuf = FHCRC ? binary.slice(0, 10) : null;
-      binary = binary.slice(10);
-      let exFeild = FEXTRA ? () => {
-        let tmp = binary.slice(1, binary[0] + 1);
-        if (FHCRC) crcBuf = crcBuf.concat(binary.slice(0, binary[0] + 1));
-        binary = binary.slice(binary[0] + 1);
-        // return [new TextDecoder().decode(tmp[0]), new TextDecoder().decode(tmp[1]), new TextDecoder().decode(tmp.slice(4, (tmp[2] << 8) | tmp[3] + 4))];
-        return [[tmp[0]].toString(), [tmp[1]].toString(), tmp.slice(4, (tmp[3] << 8) | tmp[2] + 4).toString()];
-      } : null;
-      let fileName = FNAME ? () => {  //  it may be good way to change other way to get strings and the length;
-        let tmp = "";
-        for (let i = 0; binary[i] !== 0; i++) {
-          // tmp +=  new TextDecoder().decode(binary[i]);
-          tmp += binary[i].toString();
-        }
-        if (FHCRC) crcBuf = crcBuf.concat(binary.slice(0, tmp.length));
-        binary = binary.slice(tmp.length);
-        return tmp;
-      } : null;
-      let fileComment = FCOMMENT ? () => {  //  -------------------------------------------------------
-        let tmp = "";
-        for (let i = 0; binary[i] !== 0; i++) {
-          // tmp +=  new TextDecoder().decode(binary[i]);
-          tmp += binary[i].toString();
-        }
-        if (FHCRC) crcBuf = crcBuf.concat(binary.slice(0, tmp.length));
-        binary = binary.slice(tmp.length);
-        return tmp;
-      } : null;
-      if (FHCRC) {
-        let tmp = update_crc(binary[1] << 8 | binary[0] ,crcBuf, crcBuf.length);
-        if (tmp & 0xffff !== 0) return [null, "CRC16"];
-        binary = binary.slice(2);
-      }
-      let previous;
-      do {
-        let BFINAL = (binary[0] & 0b10000000) >> 7;
-        let BTYPE = (binary[0] & 0b01100000) >> 5;
-        if (BTYPE == 0) {
-          previous = binary.slice(0, 4 + binary[1] << 8 | binary[0]);
-        } else if (BTYPE == 0b01 || BTYPE == 0b10) {
-          if (BTYPE == 0b10) {
+//     function crc(buf, len) {
+//       return update_crc(0n, buf, len);
+//     }
+// // little endiannes
+//     function gunzip(binary) {
+//       let ID1 = binary[0];
+//       let ID2 = binary[1];
+//       let CM = binary[2];
+//       let FLG = binary[3];
+//       let MTIME = binary[4] << 3 | binary[5] << 2 | binary[6] << 1 | binary[7];
+//       let XFL = binary[8];
+//       let OS = binary[9];
+//       if (ID1 !== 0x1F) return [null, "ID1"];
+//       if (ID2 !== 0x8B) return [null, "ID2"];
+//       if (!(CM & (1 << 7))) return [null, "CM"];
+//       let FTEXT = FLG & 1;
+//       let FHCRC = FLG & (1 << 1);
+//       let FEXTRA = FLG & (1 << 2);
+//       let FNAME = FLG & (1 << 3);
+//       let FCOMMENT = FLG & (1 << 4);
+//       if (FLG & (0b111 << 5)) return [null, "FLG RESERVED"];
+//       let crcBuf = FHCRC ? binary.slice(0, 10) : null;
+//       binary = binary.slice(10);
+//       let exFeild = FEXTRA ? () => {
+//         let tmp = binary.slice(1, binary[0] + 1);
+//         if (FHCRC) crcBuf = crcBuf.concat(binary.slice(0, binary[0] + 1));
+//         binary = binary.slice(binary[0] + 1);
+//         // return [new TextDecoder().decode(tmp[0]), new TextDecoder().decode(tmp[1]), new TextDecoder().decode(tmp.slice(4, (tmp[2] << 8) | tmp[3] + 4))];
+//         return [[tmp[0]].toString(), [tmp[1]].toString(), tmp.slice(4, (tmp[3] << 8) | tmp[2] + 4).toString()];
+//       } : null;
+//       let fileName = FNAME ? () => {  //  it may be good way to change other way to get strings and the length;
+//         let tmp = "";
+//         for (let i = 0; binary[i] !== 0; i++) {
+//           // tmp +=  new TextDecoder().decode(binary[i]);
+//           tmp += binary[i].toString();
+//         }
+//         if (FHCRC) crcBuf = crcBuf.concat(binary.slice(0, tmp.length));
+//         binary = binary.slice(tmp.length);
+//         return tmp;
+//       } : null;
+//       let fileComment = FCOMMENT ? () => {  //  -------------------------------------------------------
+//         let tmp = "";
+//         for (let i = 0; binary[i] !== 0; i++) {
+//           // tmp +=  new TextDecoder().decode(binary[i]);
+//           tmp += binary[i].toString();
+//         }
+//         if (FHCRC) crcBuf = crcBuf.concat(binary.slice(0, tmp.length));
+//         binary = binary.slice(tmp.length);
+//         return tmp;
+//       } : null;
+//       if (FHCRC) {
+//         let tmp = update_crc(binary[1] << 8 | binary[0] ,crcBuf, crcBuf.length);
+//         if (tmp & 0xffff !== 0) return [null, "CRC16"];
+//         binary = binary.slice(2);
+//       }
+//       let previous;
+//       do {
+//         let BFINAL = (binary[0] & 0b10000000) >> 7;
+//         let BTYPE = (binary[0] & 0b01100000) >> 5;
+//         if (BTYPE == 0) {
+//           if (((binary[1] << 8 | binary[0]) + (binary[2] << 8 | binary[3])) & 0xFFFF !== 0) return [null, "LEN NLEN"];//error
+//           previous = binary.slice(4, 4 + (binary[1] << 8 | binary[0]));
+//           binary = binary.slice(4 + (binary[1] << 8 | binary[0]));
+//         } else if (BTYPE == 0b01 || BTYPE == 0b10) {
+//           if (BTYPE == 0b10) {
 
-          }
-        } else {
-          // error
-        }
-      } while(1);
-    }
+//           }
+//         } else {
+//           // error
+//         }
+//       } while(1);
+//     }
 
     document.getElementById("download_button").onclick = (evt) => {
-      evt.preventDefault();
 
       if (nbt_map_data  && src_map_data) {
-        nbt_map_data.data.color = src_map_data;  // 128*128
+        nbt_map_data.data.colors = src_map_data;  // 128*128
         nbt_map_data.data.locked = 1;
         nbt_map_data.data.dimension = 127;
       }
 
-      let zip = new Zlib.Zip(nbt2json(nbt_map_data));
+      let zip = new Zlib.Gzip(nbt2json(nbt_map_data));
       let compressData = zip.compress();
 
-      let blob = new Blob(compressData, { 'type': 'application/dat' });
-      document.getElementById("download_button").herf = URL.createObjectURL(blob);
+      if (window.navigator.msSaveBlob) console.log("msSaveBlob");
+
+      let blob = new Blob(compressData, { 'type': 'type/' });
+      document.getElementById("download_button").download = "map.dat";
+      document.getElementById("download_button").href = URL.createObjectURL(blob);
     }
   </script>
 </body>
