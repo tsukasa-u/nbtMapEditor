@@ -230,24 +230,23 @@
 
     let src_map_data = null;
     let nbt_map_data = null;
+    let nbt_name = "";
 
     function dropHandlerNBT(ev) {
       console.log('File(s) dropped');
 
-      // Prevent default behavior (Prevent file from being opened)
       ev.preventDefault();
-      // document.getElementById("download_button").disabled = true;
 
       if (ev.dataTransfer.items) {
-        // Use DataTransferItemList interface to access the file(s)
         for (let i = 0; i < ev.dataTransfer.items.length; i++) {
-          // If dropped items aren't files, reject them
           if (ev.dataTransfer.items[i].kind === 'file') {
             let item = ev.dataTransfer.items[i];
-            // console.log('... file[' + i + '].name = ' + item.name );
-            console.log("type : " + item.type);
+            console.log(item );
+            // console.log("type : " + item.type);
             let reader = new FileReader();
-            reader.readAsArrayBuffer(item.getAsFile());
+            let file = item.getAsFile();
+            nbt_name = file.name;
+            reader.readAsArrayBuffer(file);
             reader.onload = function() {
               nbt_map_data = new Promise( (resolve, reject) => {return resolve(reader.result)})
               .then((e) => {
@@ -288,14 +287,10 @@
     function dropHandlerImage(ev) {
       console.log('File(s) dropped');
 
-      // Prevent default behavior (Prevent file from being opened)
       ev.preventDefault();
-      // document.getElementById("download_button").disabled = true;
 
       if (ev.dataTransfer.items) {
-        // Use DataTransferItemList interface to access the file(s)
         for (let i = 0; i < ev.dataTransfer.items.length; i++) {
-          // If dropped items aren't files, reject them
           if (ev.dataTransfer.items[i].kind === 'file') {
             let item = ev.dataTransfer.items[i];
             // console.log('... file[' + i + '].name = ' + item.name );
@@ -650,8 +645,8 @@
 
       if (window.navigator.msSaveBlob) console.log("msSaveBlob");
 
-      let blob = new Blob(compressData, { 'type': 'type/' });
-      document.getElementById("download_button").download = "map.dat";
+      let blob = new Blob([compressData], { 'type': 'type/' });
+      document.getElementById("download_button").download = nbt_name;
       document.getElementById("download_button").href = URL.createObjectURL(blob);
     }
   </script>
