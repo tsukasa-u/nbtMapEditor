@@ -143,6 +143,7 @@
       }
       return ret;
     }, 0);
+    console.log(colorMap);
     
     function RGB2LAB(rgb) {
       
@@ -154,13 +155,13 @@
         }
       }
 
-      let color3 = rgb.slice(0,3);
+      let color3 = rgb.slice(0, 3);
       let xyz = RGB2XYZ.map((element) => element[0]*color3[0] + element[1]*color3[1] + element[2]*color3[2]);
-      let LStar = 116*f(xyz[1]/D65[Yn]) - 16;
-      let aStar = 500*(f(xyz[0]/D65[Xn]) - f(xyz[1]/D65[Yn]));
-      let bStar = 200*(f(xyz[1]/D65[Yn]) - f(xyz[2]/D65[Zn]));
+      let LStar = 116*f(xyz[1]/D65.Yn) - 16;
+      let aStar = 500*(f(xyz[0]/D65.Xn) - f(xyz[1]/D65.Yn));
+      let bStar = 200*(f(xyz[1]/D65.Yn) - f(xyz[2]/D65.Zn));
       let CStar = Math.sqrt(aStar*aStar + bStar*bStar);
-      let hCircle = Math.atan(bStar/aStar);
+      let hCircle = aStar == 0 ? 0 : Math.atan(bStar/aStar);
       return [LStar, aStar, bStar, CStar, hCircle];
     }
 
@@ -188,7 +189,7 @@
       } else {
         H_ = (labch2[4] + labch1[4] + 2*Math.PI)/2;
       }
-      let T = 1 - 0.17*Math.cos(H_ - Math.PI/6) + 0.24*Math.cos(2*H_) + 0.32*Math.cos(3*H_ + Math.PI/30) - 0.20*cos(4*H_ - 0.35*Math.PI);
+      let T = 1 - 0.17*Math.cos(H_ - Math.PI/6) + 0.24*Math.cos(2*H_) + 0.32*Math.cos(3*H_ + Math.PI/30) - 0.20*Math.cos(4*H_ - 0.35*Math.PI);
       let SL = 1 + 0.015*Math.pow(L_ - 50, 2)/Math.sqrt(20 + Math.pow(L_ - 50, 2));
       let SC = 1 + 0.045*C_;
       let SH = 1 + 0.015*C_*T;
@@ -199,14 +200,11 @@
     function searchColorId(src) {
       let colorID = [];
       for (let i = 0; i < src.data.length; i += 4) {
-        // src.data[i];
-        // src.data[i + 1];
-        // src.data[i + 2];
-        // src.data[i + 3];
-         colorID.push(colorMap.reduce((previous, current, index) => {
-          let d = CIE2000(RGB2LAB([src.slice(i, i + 3)]), RGB2LAB[colorID[index]]);
+        colorID.push(colorMap.reduce((previous, current, index) => {
+          let d = CIE2000(RGB2LAB(src.data.slice(i, i + 3)), RGB2LAB(colorMap[index]));
+          console.log(d, src.data.slice(i, i + 3), colorMap[index]);
           return previous[1] > d ? [index, d] : previous;
-        }, [-1, 9999]));
+        }, [-1, 9999])[0]);
       }
       return colorID;
     }
@@ -249,18 +247,16 @@
               .then((e) => new Uint8Array(e))
               .then((e) => new Zlib.Gunzip(e))
               .then((e) => e.decompress())
-              .then((e) => nbt2json(e))
+              .then((e) => nbt2json(e, null, true))
               .then((e) => {
                 const tree = jsonview.create(e[0]);
                 jsonview.render(tree, document.getElementById("nbt_zone"));
-                jsonview.expand(tree);
+                // jsonview.expand(tree);
+                jsonview.collapse(tree);
                 document.getElementById("nbt_zone").style.height = window.getComputedStyle(document.getElementsByClassName("json-container")[0]).getPropertyValue('height');
-                // console.log(document.getElementsByClassName("json-container")[0]);
-                console.log(window.getComputedStyle(document.getElementsByClassName("json-container")[0]).getPropertyValue('height'));
-                // document.getElementById("nbt_zone").innerHTML = JSON.stringify(e[0]);
                 return e[0];
               });
-              console.log(nbt_map_data);
+              // console.log(nbt_map_data);
             };
           }
         }
@@ -293,10 +289,10 @@
 
               let reader = new FileReader();
               reader.readAsDataURL(item.getAsFile());
-              console.log(item.getAsFile().arrayBuffer());
+              // console.log(item.getAsFile().arrayBuffer());
               reader.onload = function() {
                 image.src = reader.result;
-                console.log(image.src);
+                // console.log(image.src);
               };
 
               image.onload = function() {
@@ -307,7 +303,7 @@
                 ctx.width = image.width;
                 ctx.height = image.height;
                 ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, canvasStyle.width, canvasStyle.width*image.height/image.width);
-                // console.log(canvas.toDataURL('image/png'));
+                console.log(ctx.getImageData(0, 0, image.width, image.height));
                 src_map_data = searchColorId(ctx.getImageData(0, 0, image.width, image.height));
                 // console.log(src_map_data);
               };
@@ -339,17 +335,16 @@
       }
     }
 //Big Endiannes
-    function nbt2json(nbtarray, tagid=null) {
+    function nbt2json(nbtarray, tagid = null, root = null) {
       // console.log(nbtarray);
-      let i = 0, name, len, tmp, taglen;
+      let i = 0, name = null, len, tmp, taglen, n = 0;
       let data = {};
-      while(tagid===null || (tagid!==null && n==0)) {
-        // console.log(i);
-        if (nbtarray[i]===undefined) return [null, -1];
-        switch (tagid===null ? nbtarray[i] : tagid) {
+      while(tagid === null || (tagid !==null && n == 0)) {
+        n++;
+        if (nbtarray[i] === undefined) return [null, -1];
+        switch (tagid === null ? nbtarray[i] : tagid) {
           case 0 :
             i++;
-            // console.log("f");
             return [data, i];
             // break;
           case 1 :
@@ -361,7 +356,6 @@
               data[name] = {
                 type: 1,
                 name: name,
-                // name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
                 data: nbtarray[i + taglen + len] & 0b1000000 ? -0x0100 + tmp : tmp,
                 binary: nbtarray.slice(i, i + taglen + 1 + len)
               };
@@ -376,13 +370,12 @@
           case 2 :
             taglen = tagid===null ? 3 : 0
             len = tagid===null ? nbtarray[i + 1] << 8 | nbtarray[i + 2] : 0;
-            tmp = nbtarray[i + taglen + len] << 8 + nbtarray[i + taglen + 1 + len];
+            tmp = nbtarray[i + taglen + len] << 8 | nbtarray[i + taglen + 1 + len];
             name = new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len));
             if (tagid === null) {
               data[name] = {
                 type: 2,
                 name: name,
-                // name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
                 data: nbtarray[i + taglen + len] & 0b1000000 ? -0b010000 + tmp : tmp,
                 binary: nbtarray.slice(i, i + taglen + 2 + len)
               };
@@ -397,13 +390,12 @@
           case 3 :
             taglen = tagid===null ? 3 : 0
             len = tagid===null ? nbtarray[i + 1] << 8 | nbtarray[i + 2] : 0;
-            tmp = nbtarray[i + taglen + len] << 24 + nbtarray[i + taglen + 1 + len] << 16 + nbtarray[i + taglen + 2 + len] << 8 + nbtarray[i + taglen + 3 + len];
+            tmp = nbtarray[i + taglen + len] << 24 | nbtarray[i + taglen + 1 + len] << 16 | nbtarray[i + taglen + 2 + len] << 8 | nbtarray[i + taglen + 3 + len];
             name = new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len));
             if (tagid === null) {
               data[name] = {
                 type: 3,
                 name: name,
-                // name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
                 data: nbtarray[i + taglen + len] & 0b1000000 ? -0b0100000000 + tmp : tmp,
                 binary: nbtarray.slice(i, i + taglen + 4 + len)
               };
@@ -418,13 +410,12 @@
           case 4 :
             taglen = tagid===null ? 3 : 0
             len = tagid===null ? nbtarray[i + 1] << 8 | nbtarray[i + 2] : 0;
-            tmp = nbtarray[i + taglen + len] << 56 + nbtarray[i + taglen + 1 + len] << 48 + nbtarray[i + taglen + 2 + len] << 40 + nbtarray[i + taglen + 3 + len] << 32 + nbtarray[i + taglen + 4 + len] << 24 + nbtarray[i + taglen + 5 + len] << 16 + nbtarray[i + taglen + 6 + len] << 8 + nbtarray[i + taglen + 7 + len];
+            tmp = nbtarray[i + taglen + len] << 56 | nbtarray[i + taglen + 1 + len] << 48 | nbtarray[i + taglen + 2 + len] << 40 | nbtarray[i + taglen + 3 + len] << 32 | nbtarray[i + taglen + 4 + len] << 24 | nbtarray[i + taglen + 5 + len] << 16 | nbtarray[i + taglen + 6 + len] << 8 | nbtarray[i + taglen + 7 + len];
             name = new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len));
             if (tagid === null) {
               data[name] = {
                 type: 4,
                 name: name,
-                // name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
                 data: nbtarray[i + taglen + len] & 0b1000000 ? -0b010000000000000000 + tmp : tmp,
                 binary: nbtarray.slice(i, i + taglen + 8 + len)
               };
@@ -444,13 +435,12 @@
               data[name] = {
                 type: 5,
                 name: name,
-                // name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
-                data: (nbtarray[i + taglen + len] & 0b10000000 ? -1 : 1)*Math.exp(2, (nbtarray[i + taglen + len] & 0b01111111) << 1 + nbtarray[i + taglen + 1 + len] >> 7 - 140)*(1 << 23 + (nbtarray[i + taglen + 1 + len] & 0b01111111) << 16 + nbtarray[i + taglen + 2 + len] << 8 + nbtarray[i + taglen + 3 + len]),
+                data: (nbtarray[i + taglen + len] & 0b10000000 ? -1 : 1)*Math.exp(2, ((nbtarray[i + taglen + len] & 0b01111111) << 1 | nbtarray[i + taglen + 1 + len] >> 7) - 140)*(1 << 23 | (nbtarray[i + taglen + 1 + len] & 0b01111111) << 16 | nbtarray[i + taglen + 2 + len] << 8 | nbtarray[i + taglen + 3 + len]),
                 binary: nbtarray.slice(i, i + taglen + 4 + len)
               };
             } else {
               data = {
-                data: (nbtarray[i + taglen + len] & 0b10000000 ? -1 : 1)*Math.exp(2, (nbtarray[i + taglen + len] & 0b01111111) << 1 + nbtarray[i + taglen + 1 + len] >> 7 - 140)*(1 << 23 + (nbtarray[i + taglen + 1 + len] & 0b01111111) << 16 + nbtarray[i + taglen + 2 + len] << 8 + nbtarray[i + taglen + 3 + len]),
+                data: (nbtarray[i + taglen + len] & 0b10000000 ? -1 : 1)*Math.exp(2, ((nbtarray[i + taglen + len] & 0b01111111) << 1 | nbtarray[i + taglen + 1 + len] >> 7) - 140)*(1 << 23 | (nbtarray[i + taglen + 1 + len] & 0b01111111) << 16 | nbtarray[i + taglen + 2 + len] << 8 | nbtarray[i + taglen + 3 + len]),
                 binary: nbtarray.slice(i, i + taglen + 4 + len)
               };
             }
@@ -464,13 +454,12 @@
               data[name] = {
                 type: 6,
                 name: name,
-                // name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
-                data: (nbtarray[i + taglen + len] & 0b10000000 ? -1 : 1)*Math.exp(2, (nbtarray[i + taglen + len] & 0b01111111) << 4 + nbtarray[i + taglen + 1 + len] >> 4 - 1079)*(1 << 52 + (nbtarray[i + taglen + 1 + len] & 0b00001111) << 48 + nbtarray[i + taglen + 2 + len] << 40 + nbtarray[i + taglen + 3 + len] << 32 + nbtarray[i + taglen + 4 + len] << 24 + nbtarray[i + taglen + 5 + len] << 16 + nbtarray[i + taglen + 6 + len] << 8 + nbtarray[i + taglen + 7 + len]),
+                data: (nbtarray[i + taglen + len] & 0b10000000 ? -1 : 1)*Math.exp(2, ((nbtarray[i + taglen + len] & 0b01111111) << 4 | nbtarray[i + taglen + 1 + len] >> 4) - 1079)*(1 << 52 | (nbtarray[i + taglen + 1 + len] & 0b00001111) << 48 | nbtarray[i + taglen + 2 + len] << 40 | nbtarray[i + taglen + 3 + len] << 32 | nbtarray[i + taglen + 4 + len] << 24 | nbtarray[i + taglen + 5 + len] << 16 | nbtarray[i + taglen + 6 + len] << 8 | nbtarray[i + taglen + 7 + len]),
                 binary: nbtarray.slice(i, i + taglen + 8 + len)
               };
             } else {
               data = {
-                data: (nbtarray[i + taglen + len] & 0b10000000 ? -1 : 1)*Math.exp(2, (nbtarray[i + taglen + len] & 0b01111111) << 4 + nbtarray[i + taglen + 1 + len] >> 4 - 1079)*(1 << 52 + (nbtarray[i + taglen + 1 + len] & 0b00001111) << 48 + nbtarray[i + taglen + 2 + len] << 40 + nbtarray[i + taglen + 3 + len] << 32 + nbtarray[i + taglen + 4 + len] << 24 + nbtarray[i + taglen + 5 + len] << 16 + nbtarray[i + taglen + 6 + len] << 8 + nbtarray[i + taglen + 7 + len]),
+                data: (nbtarray[i + taglen + len] & 0b10000000 ? -1 : 1)*Math.exp(2, ((nbtarray[i + taglen + len] & 0b01111111) << 4 | nbtarray[i + taglen + 1 + len] >> 4) - 1079)*(1 << 52 | (nbtarray[i + taglen + 1 + len] & 0b00001111) << 48 | nbtarray[i + taglen + 2 + len] << 40 | nbtarray[i + taglen + 3 + len] << 32 | nbtarray[i + taglen + 4 + len] << 24 | nbtarray[i + taglen + 5 + len] << 16 | nbtarray[i + taglen + 6 + len] << 8 | nbtarray[i + taglen + 7 + len]),
                 binary: nbtarray.slice(i, i + taglen + 8 + len)
               };
             }
@@ -479,13 +468,12 @@
           case 7 :
             taglen = tagid===null ? 3 : 0
             len = tagid===null ? nbtarray[i + 1] << 8 | nbtarray[i + 2] : 0;
-            tmp = nbtarray[i + taglen + len] << 24 + nbtarray[i + taglen + 1 + len] << 16 + nbtarray[i + taglen + 2 + len] << 8 + nbtarray[i + taglen + 3 + len];
+            tmp = nbtarray[i + taglen + len] << 24 | nbtarray[i + taglen + 1 + len] << 16 | nbtarray[i + taglen + 2 + len] << 8 | nbtarray[i + taglen + 3 + len];
             name = new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len));
             if (tagid === null) {
               data[name] = {
                 type: 7,
                 name: name,
-                // name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
                 data: nbtarray.slice(i + taglen + 4 + len, i + taglen + 4 + len + tmp),
                 binary: nbtarray.slice(i, i + taglen + 4 + len + tmp)
               };
@@ -500,15 +488,13 @@
           case 8 :
             taglen = tagid===null ? 3 : 0
             len = tagid===null ? nbtarray[i + 1] << 8 | nbtarray[i + 2] : 0;
-            tmp = nbtarray[i + taglen + len] << 8 + nbtarray[i + taglen + 1 + len];
+            tmp = nbtarray[i + taglen + len] << 8 | nbtarray[i + taglen + 1 + len];
             name = new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len));
             if (tagid === null) {
               data[name] = {
                 type: 8,
                 name: name,
-                // name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
                 data: new TextDecoder().decode(nbtarray.slice(i + taglen + 2 + len, i + taglen + 2 + len + tmp)),
-                // data: nbtarray.slice(i + taglen + 2 + len, i + taglen + 2 + len + tmp).toString(),
                 binary: nbtarray.slice(i, i + taglen + 2 + len + tmp)
               };
             } else {
@@ -523,75 +509,102 @@
             taglen = tagid===null ? 3 : 0
             len = tagid===null ? nbtarray[i + 1] << 8 | nbtarray[i + 2] : 0;
             tmp = new Array(0);
-            let count = nbtarray[i + taglen+ 1 + len ] << 24 + nbtarray[i + taglen + 2 + len] << 16 + nbtarray[i + taglen + 3 + len] << 8 + nbtarray[i + taglen + 4 + len];
+            let count = nbtarray[i + taglen+ 1 + len ] << 24 | nbtarray[i + taglen + 2 + len] << 16 | nbtarray[i + taglen + 3 + len] << 8 | nbtarray[i + taglen + 4 + len];
             let redata = [null, 0];
             let listcount = 0;
-            let tagid = nbtarray[i + taglen + len];
+            let tagidnext = nbtarray[i + taglen + len];
             for (let j = 0; j < count; j++) {
-              redata = nbt2json(nbtarray.slice(i + taglen + len + 5 + listcount), tagid);
+              redata = nbt2json(nbtarray.slice(i + taglen + len + 5 + listcount), tagidnext);
               listcount += redata[1];
               tmp.push(redata[0]);
             }
             name = new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len));
             data[name] = {
-              type: 10,
+              type: 9,
               name: name,
-              // name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
               data: tmp,
               binary: nbtarray.slice(i, i + taglen + len + 5)
             };
             i = i + taglen + len + 5 + listcount;
             break;
           case 10 :
+            // console.log(nbtarray);
             taglen = tagid===null ? 3 : 0
             len = tagid===null ? nbtarray[i + 1] << 8 | nbtarray[i + 2] : 0;
-            tmp = nbt2json(nbtarray.slice(i + taglen + len));
-            if (tmp[0] == null) return tmp;
-            name = len == 0 ? "" : new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len));
-            data[name] = {
-              type: 10,
-              name: name,
-              // name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
-              data: tmp[0],
-              binary: nbtarray.slice(i, i + taglen + len)
-            };
+            tmp = nbt2json(nbtarray.slice(i + taglen + len), null);
+            if (tmp[0] === null) return tmp;
+            name = len == 0 ? "null" : new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len));
+            if (tagid === null) {
+              data[name] = {
+                type: 10,
+                name: name,
+                data: tmp[0],
+                binary: nbtarray.slice(i, i + taglen + len)
+              };
+            } else {
+              data = {
+                type: 10,
+                data: tmp[0],
+                binary: nbtarray.slice(i, i + taglen + len)
+              };
+            }
             i = i + taglen + len + tmp[1];
+            if (root) return [data, -1];
             break;
           case 11 :
             taglen = tagid===null ? 3 : 0
             len = tagid===null ? nbtarray[i + 1] << 8 | nbtarray[i + 2] : 0;
-            tmp = nbtarray[i + taglen + len] << 24 + nbtarray[i + taglen + 1 + len] << 16 + nbtarray[i + taglen + 2 + len] << 8 + nbtarray[i + taglen + 3 + len];
+            tmp = nbtarray[i + taglen + len] << 24 | nbtarray[i + taglen + 1 + len] << 16 | nbtarray[i + taglen + 2 + len] << 8 | nbtarray[i + taglen + 3 + len];
             name = new TextDecoder().decode(nbtarray.slice(i + taglen, i + taglen + len));
             if (tagid === null) {
               data[name] = {
                 type: 11,
                 name: name,
-                // name: nbtarray.slice(i + taglen, i + taglen + len).toString(),
-                data: (new Array(tmp)).map((element, index) => nbtarray[i + taglen + 4 + len + index*4] << 24 + nbtarray[i + taglen + 5 + len + index*4] << 16 + nbtarray[i + taglen + 6 + len + index*4] << 8 + nbtarray[i + taglen + 7 + len + index*4]),
+                data: (new Array(tmp)).map((element, index) => nbtarray[i + taglen + 4 + len + index*4] << 24 | nbtarray[i + taglen + 5 + len + index*4] << 16 | nbtarray[i + taglen + 6 + len + index*4] << 8 | nbtarray[i + taglen + 7 + len + index*4]),
                 binary: nbtarray.slice(i, i + taglen + 4 + len + tmp*4)
               };
             } else {
               data = {
-                data: (new Array(tmp)).map((element, index) => nbtarray[i + taglen + 4 + len + index*4] << 24 + nbtarray[i + taglen + 5 + len + index*4] << 16 + nbtarray[i + taglen + 6 + len + index*4] << 8 + nbtarray[i + taglen + 7 + len + index*4]),
+                data: (new Array(tmp)).map((element, index) => nbtarray[i + taglen + 4 + len + index*4] << 24 | nbtarray[i + taglen + 5 + len + index*4] << 16 | nbtarray[i + taglen + 6 + len + index*4] << 8 | nbtarray[i + taglen + 7 + len + index*4]),
                 binary: nbtarray.slice(i, i + taglen + 4 + len + tmp*4)
               };
             }
             i = i + taglen + 4 + len + tmp*4;
         }
+        // console.log(name, nbtarray[i], tagid);
       }
       return [data, i];
     }
 
     function json2nbt(jsondata) {
+      // console.log(Object.keys(jsondata));
       let data = Object.keys(jsondata).reduce((previous, current, index) => {
-        if (jsondata[current].type == 10 || jsondata[current].type == 9) {
-          previous.concat(jsondata[current].binary);
-          return previous.concat(json2nbt(jsondata[current].data));
+        if (jsondata[current].type == 10) {
+          // return previous.concat(jsondata[current].binary, json2nbt(jsondata[current].data), [0]);
+          let tmp = json2nbt(jsondata[current].data);
+          let ret = new Uint8Array(previous.length + jsondata[current].binary.length + tmp.length + 1);
+          ret.set(previous, 0);
+          ret.set(jsondata[current].binary, previous.length)
+          ret.set(tmp, previous.length + jsondata[current].binary.length);
+          ret.set([0], ret.length - 1)
+          return ret;
+        } else if (jsondata[current].type == 9) {
+          // return previous.concat(jsondata[current].binary, json2nbt(jsondata[current].data));
+          let tmp = json2nbt(jsondata[current].data);
+          let ret = new Uint8Array(previous.length + jsondata[current].binary.length + tmp.length);
+          ret.set(previous, 0);
+          ret.set(jsondata[current].binary, previous.length)
+          ret.set(tmp, previous.length + jsondata[current].binary.length);
+          return ret;
         } else {
-          return previous.concat(jsondata[current].binary);
+          let ret = new Uint8Array(previous.length + jsondata[current].binary.length);
+          ret.set(previous, 0);
+          ret.set(jsondata[current].binary, previous.length);
+          return ret;
+          // return previous.concat(jsondata[current].binary);
         }
-      });
-      return data.concat([0]);
+      }, []);
+      return data;
     }
 
 //     let crc_table = new Uint32Array(256);
@@ -701,21 +714,55 @@
 //     }
 
     document.getElementById("download_button").onclick = (evt) => {
+      // evt.preventDefault();
 
       if (nbt_map_data  && src_map_data) {
-        nbt_map_data.data.colors = src_map_data;  // 128*128
-        nbt_map_data.data.locked = 1;
-        nbt_map_data.data.dimension = 127;
+        nbt_map_data.then((mapdata) => {
+          // let tmp;
+          // // console.log(mapdata.null.data.data.data.colors.binary.length, src_map_data.length);
+          // // tmp = new Uint8Array(mapdata.null.data.data.data.colors.binary.length);
+          // // tmp.set(mapdata.null.data.data.data.colors.binary.slice(0, -src_map_data.length), 0);
+          // // tmp.set(src_map_data, mapdata.null.data.data.data.colors.binary.lengt - src_map_data.length);
+          // // mapdata.null.data.data.data.colors.binary = tmp;  // 128*128
+          // console.log(src_map_data);
+          // mapdata.null.data.data.data.colors.binary.set(src_map_data, mapdata.null.data.data.data.colors.binary.lengt - src_map_data.length)
+          // mapdata.null.data.data.data.colors.data = src_map_data;
+
+          // // tmp = new Uint8Array(mapdata.null.data.data.data.locked.binary.length);
+          // // tmp.set(mapdata.null.data.data.data.locked.binary.slice(0, -1), 0);
+          // // tmp.set([1], mapdata.null.data.data.data.locked.binary.length - 1);
+          // mapdata.null.data.data.data.locked.binary.set([1], mapdata.null.data.data.data.locked.binary.length - 1);
+          // mapdata.null.data.data.data.locked.data = 1;
+
+          // // tmp = new Uint8Array(mapdata.null.data.data.data.dimension.binary.length);
+          // // tmp.set(mapdata.null.data.data.data.dimension.binary.slice(0, -1), 0);
+          // // tmp.set([127], mapdata.null.data.data.data.dimension.binary.length - 1);
+          // mapdata.null.data.data.data.dimension.binary.set([127], mapdata.null.data.data.data.dimension.binary.length - 1);
+          // mapdata.null.data.data.data.dimension.data = 127;
+
+          return mapdata;
+        })
+        .then((e) => json2nbt(e))
+        .then((e) => {
+          console.log(e);
+          let zip =  new Zlib.Gzip(e);
+          return zip.compress();
+        })
+        .then((compressData) => {
+          let blob = new Blob([compressData], { 'type': 'type/' });
+          document.getElementById("download_button").download = nbt_name;
+          document.getElementById("download_button").href = URL.createObjectURL(blob);
+        })
       }
+      // let zip = new Zlib.Gzip(json2nbt(nbt_map_data));
+      // let compressData = zip.compress();
 
-      let zip = new Zlib.Gzip(nbt2json(nbt_map_data));
-      let compressData = zip.compress();
+      // if (window.navigator.msSaveBlob) console.log("msSaveBlob");
+    }
 
-      if (window.navigator.msSaveBlob) console.log("msSaveBlob");
-
-      let blob = new Blob([compressData], { 'type': 'type/' });
-      document.getElementById("download_button").download = nbt_name;
-      document.getElementById("download_button").href = URL.createObjectURL(blob);
+    document.getElementById("nbt_zone").onclick = () => {
+      document.getElementById("nbt_zone").style.height = window.getComputedStyle(document.getElementsByClassName("json-container")[0]).getPropertyValue('height');
+      // console.log("ckuck!");
     }
   </script>
 </body>
