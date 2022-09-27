@@ -11,5 +11,6 @@ minecraftのmapのnbtデータを編集して任意の画像(128×128)に近い�
 7. minecraftにおいて、次のコマンドを実行　\give @p minecraft:filled_map{map:#} 1 
 
 ※１ Chrome  version: 105.0.5195.127(Official Build) (64 ビット)で動作確認済み。firefixでは正常に動作しないことがあります。
+
 ※２ Download終了と同時にdatファイルがeditorなどで開かれることがあります。
 
