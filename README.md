@@ -15,4 +15,4 @@ minecraftのmapのnbtデータを編集して任意の画像(128×128)に近い�
 ※２ Download終了と同時にdatファイルがeditorなどで開かれることがあります。
 
 # image
-本repositoryの画像の著作権はhttps://github.com/noboribeにあります。
+本repositoryの画像の著作権はhttps://github.com/noboribe にあります。
