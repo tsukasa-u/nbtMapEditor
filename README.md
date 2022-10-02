@@ -2,7 +2,7 @@
 minecraftのmapのnbtデータを編集して任意の画像(128×128)に近いブロックの色に置き替えた地図上に書き換えます。
 
 # usage
-1. dragp.htmlを起動。※１
+1. index.html or https://tsukasa-u.github.io/nbtMapEditor/ を起動。※１
 2. 任意のmap_#.datをnbtの枠内にDrag&Drop.
 3. 任意の画像(縦:128px, 横:128px)をimageの枠内にDrag&Drop.
 4. WRITEの文字をClick.書き込みが始まります。
