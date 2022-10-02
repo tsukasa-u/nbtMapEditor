@@ -909,6 +909,7 @@ font-size: x-large;
           let map_begin_id = Number(document.getElementById("mapid").value);
           if (src_map_data) {
             src_map_data.forEach((ele, index) => {
+              console.log(ele);
               let tmp = mapdata.null.data.data.data.colors.binary.slice(0, 9);
               mapdata.null.data.data.data.colors.binary = new Uint8Array(13 + (1 << 14));
               mapdata.null.data.data.data.colors.binary.set(tmp, 0);
@@ -971,7 +972,7 @@ font-size: x-large;
           selected.forEach((ele) => {
             if (ele.classList.contains("select_on")) {
               let yx = ele.dataset.number.split("-");
-              raw_src_data = ctx.getImageData(Number(yx[1])*128, Number(yx[0])*128, Number(yx[0])*128 + 128, Number(yx[1])*128 + 128);
+              raw_src_data = ctx.getImageData(Number(yx[1])*128, Number(yx[0])*128, 128, 128);
               src_map_data.push(searchColorId(raw_src_data));
               count++;
               new Promise(resolve => resolve( progressBar.animate(count/max_selected)));
