@@ -13,12 +13,13 @@
     p, h1, h2, #centerArea {
       color: #999;
       text-align: center;
+      user-select:none;
     }
     #canvas {
-      width:  128;
-      height: 128;
-      margin: 0em;
-      padding: 2em;
+      width:  128px;
+      height: 128px;
+      margin: 0;
+      padding: 32px;
       border-radius: 30px;
       border: 5px solid #ccc;
       display: block;
@@ -31,7 +32,7 @@
       overflow: hidden;
       border: 5px solid #ccc;
       border-radius: 30px;
-      padding: 2em;
+      padding: 32px;
       width:  648px;
       height: 400px;
       margin-left: auto;
@@ -44,6 +45,21 @@
       margin-left: auto;
       margin-right: auto;
       position: relative;
+    }
+    #selected {
+      text-align: center;
+font-size: x-large;
+      line-height: 128px;
+      text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff,0 0 3px #fff,0 0 3px #fff,0 0 3px #fff,0 0 3px #fff,0 0 3px #fff,0 0 3px #fff,0 0 3px #fff,0 0 3px #fff,0 0 3px #fff,0 0 3px #fff,0 0 3px #fff,0 0 3px #fff,0 0 3px #fff;
+      user-select:none;
+    }
+    .select_off {
+      /* visibility: hidden; */
+      opacity: 0;
+    }
+    .select_on {
+      /* visibility: visible; */
+      opacity: 1;
     }
   </style>
 </head>
@@ -60,6 +76,7 @@
       <h2>image</h2>
       <canvas id="canvas" ondrop="dropHandlerImage(event)" ondragover="dragOverHandlerImage(event);"></canvas>
     </div>
+    <div id="select"></div>
     <div>
       <h2>nbt</h2>
       <div id="nbt_zone" ondrop="dropHandlerNBT(event)" ondragover="dragOverHandlerNBT(event);"></div>
@@ -380,8 +397,7 @@
             console.log("type : " + item.type);
             if (item.type.match("^image/png")) {
               
-              const canvas = document.getElementById("canvas");
-              let ctx = canvas.getContext("2d");
+              let ctx = document.getElementById("canvas").getContext("2d");
               let image = new Image();
 
               let reader = new FileReader();
@@ -395,28 +411,64 @@
               image.onload = function() {
                 console.log("load");
                 let canvasStyle = document.querySelector('#canvas');
-                canvasStyle.width = document.documentElement.clientWidth*0.7;
-                canvasStyle.height = canvasStyle.width*image.height/image.width;
-                let wScale = Math.log2(image.width>>7);
-                let hScale = Math.log2(image.height>>7);
-                if (wScale == NaN || hScale == NaN) {
+                // canvasStyle.width = document.documentElement.clientWidth*0.7;
+                // canvasStyle.height = canvasStyle.width*image.height/image.width;
+                // let wScale = Math.log2(image.width>>7);
+                // let hScale = Math.log2(image.height>>7);
+                // if (wScale == NaN || hScale == NaN) {
                   map_scale = 0;
-                } else {
-                  map_scale = wScale > hScale ? wScale : hScale;
-                  if (map_scale > 4) map_scale = 4;
-                }
-                ctx.width = 1 << (map_scale + 7);
-                ctx.height = 1 << (map_scale + 7);
+                // } else {
+                //   map_scale = wScale > hScale ? wScale : hScale;
+                //   if (map_scale > 4) map_scale = 4;
+                // }
+                console.log(String(image.width >> 7 << 7) + "px", String(image.height >> 7 << 7) + "px");
+                canvasStyle.setAttribute("width", String(image.width >> 7 << 7) + "px");
+                canvasStyle.setAttribute("height", String(image.height >> 7 << 7) + "px");
+                canvasStyle.style.width = String(image.width >> 7 << 7) + "px";
+                canvasStyle.style.height = String(image.height >> 7 << 7) + "px";
+                ctx.width = image.width >> 7 << 7;
+                ctx.height = image.height >> 7 << 7;
                 // ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, canvasStyle.width, canvasStyle.width*image.height/image.width);
                 // ctx.drawImage(image, 0, 0, canvasStyle.width, canvasStyle.width);
-                ctx.drawImage(image, 0, 0, ctx.width, ctx.width);
+                console.log(image);
+                ctx.drawImage(image, 0, 0);
                 // console.log(ctx.getImageData(0, 0, image.width, image.height).data.length);
                 // raw_src_data = ctx.getImageData(0, 0, image.width, image.height);
                 raw_src_data = ctx.getImageData(0, 0, ctx.width, ctx.height);
-                console.log(raw_src_data);
+                // console.log(raw_src_data);
                 // src_map_data = searchColorId(raw_src_data);
                 // console.log("!")
                 // console.log(src_map_data);
+
+                let select = document.getElementById('select');
+                while (select.firstChild) {
+                  select.removeChild(element.firstChild);
+                }
+
+                let i_max = image.width >> 7;
+                let j_max = image.width >> 7;
+                for (let i = 0; i < i_max; i++) {
+                  for (let j = 0; j < j_max; j++) {
+                    let selected = document.createElement('div');
+                    selected.style.backgroundColor = "rgba(128, 128, 128, .2)";
+                    selected.style.width = "128px";
+                    selected.style.height = "128px";
+                    selected.style.position = "absolute";
+                    selected.classList.add('select_on');
+                    selected.style.border = "dashed gray";
+                    selected.innerText = `${i_max*i + j}`;
+                    selected.setAttribute("id", "selected");
+                    selected.onclick = (e) => {
+                      e.target.classList.toggle("select_on");
+                      e.target.classList.toggle("select_off");
+                    }
+                    selected.setAttribute("data-number", `${i}-${j}`);
+                    selected.style.top = String(113 + i*128) + "px";
+                    // console.log(document.documentElement.clientWidth/2, i, j, (image.width >> 7 << 6));
+                    selected.style.left = String(document.documentElement.clientWidth/2 + j*128 - (image.width >> 7 << 6)) + "px";
+                    select.appendChild(selected);
+                  }
+                }
               };
             } else {
 
