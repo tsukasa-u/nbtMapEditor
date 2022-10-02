@@ -473,7 +473,7 @@ font-size: x-large;
                     selected.innerText = `${i_max*i + j}`;
                     selected.setAttribute("id", "selected");
                     selected.onclick = (e) => {
-                      if (e.target.classList.contains("select_off") || e.target.classList.contains("select_on") {
+                      if (e.target.classList.contains("select_off") || e.target.classList.contains("select_on")) {
                         e.target.classList.toggle("select_on");
                         e.target.classList.toggle("select_off");
                       }
