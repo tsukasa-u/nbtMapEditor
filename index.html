@@ -102,6 +102,7 @@ font-size: x-large;
   
     <script type="text/javascript" src="./zlib.js-develop/bin/gunzip.min.js"></script>
     <script type="text/javascript" src="./zlib.js-develop/bin/gzip.min.js"></script>
+    <script type="text/javascript" src="./zlib.js-develop/bin/zip.min.js"></script>
     <script type="text/javascript" src="./json-view-master/dist/jsonview.js"></script>
     <script type="text/javascript" src="./progressbar.js-1.0.1/dist/progressbar.min.js"></script>
     <script type="text/javascript">
@@ -447,7 +448,7 @@ font-size: x-large;
                 ctx.drawImage(image, 0, 0);
                 // console.log(ctx.getImageData(0, 0, image.width, image.height).data.length);
                 // raw_src_data = ctx.getImageData(0, 0, image.width, image.height);
-                raw_src_data = ctx.getImageData(0, 0, ctx.width, ctx.height);
+                // raw_src_data = ctx.getImageData(0, 0, ctx.width, ctx.height);
                 // console.log(raw_src_data);
                 // src_map_data = searchColorId(raw_src_data);
                 // console.log("!")
@@ -472,8 +473,10 @@ font-size: x-large;
                     selected.innerText = `${i_max*i + j}`;
                     selected.setAttribute("id", "selected");
                     selected.onclick = (e) => {
-                      e.target.classList.toggle("select_on");
-                      e.target.classList.toggle("select_off");
+                      // e.target.classList.toggle("select_on");
+                      // e.target.classList.toggle("select_off");
+                      e.target.classList.replace("select_on", "select_off");
+                      e.target.classList.replace("select_off", "select_on");
                     }
                     selected.setAttribute("data-number", `${i}-${j}`);
                     selected.style.top = String(113 + i*128) + "px";
@@ -896,40 +899,53 @@ font-size: x-large;
 
       if (nbt_map_data  && src_map_data) {
         nbt_map_data.then((mapdata) => {
-          // // console.log(mapdata.null.data.data.data.colors.binary.length, src_map_data.length);
-          // // tmp = new Uint8Array(mapdata.null.data.data.data.colors.binary.length);
-          // // tmp.set(mapdata.null.data.data.data.colors.binary.slice(0, -src_map_data.length), 0);
-          // // tmp.set(src_map_data, mapdata.null.data.data.data.colors.binary.lengt - src_map_data.length);
-          // // mapdata.null.data.data.data.colors.binary = tmp;  // 128*128
-          // console.log(src_map_data);
-          
-          // console.log(src_map_data.length, 1 << (14 + 2*map_scale));
-          let tmp = mapdata.null.data.data.data.colors.binary.slice(0, 9);
-          mapdata.null.data.data.data.colors.binary = new Uint8Array(13 + (1 << (14 + 2*map_scale)));
-          mapdata.null.data.data.data.colors.binary.set(tmp, 0);
-          mapdata.null.data.data.data.colors.binary.set(map_scale == 0 ? [0, 0, 1 << 6, 0] : [0, 1 << (2*map_scale - 2), 0, 0], 9);
-          mapdata.null.data.data.data.colors.binary.set(src_map_data, 13);
-          mapdata.null.data.data.data.colors.data = src_map_data;
-          // console.log(mapdata.null.data.data.data.colors.binary);
 
           mapdata.null.data.data.data.scale.binary.set([map_scale], mapdata.null.data.data.data.scale.binary.length -1);
           mapdata.null.data.data.data.scale.data = map_scale;
 
           mapdata.null.data.data.data.locked.binary.set([1], mapdata.null.data.data.data.locked.binary.length - 1);
           mapdata.null.data.data.data.locked.data = 1;
+          var zip = new Zlib.Zip();
+          let map_begin_id = Number(document.getElementById("mapid").value);
+          if (src_map_data) {
+            src_map_data.forEach((ele, index) => {
+              let tmp = mapdata.null.data.data.data.colors.binary.slice(0, 9);
+              mapdata.null.data.data.data.colors.binary = new Uint8Array(13 + (1 << 14));
+              mapdata.null.data.data.data.colors.binary.set(tmp, 0);
+              mapdata.null.data.data.data.colors.binary.set([0, 0, 1 << 6, 0], 9);
+              mapdata.null.data.data.data.colors.binary.set(ele, 13);
+              mapdata.null.data.data.data.colors.data = ele;
+              
+              let nbt_raw_data = json2nbt(mapdata);
+              let gzip =  new Zlib.Gzip(nbt_raw_data);
+              let ziped_nbt = gzip.compress();
+              zip.addFile(ziped_nbt, {
+                  filename: stringToByteArray(`map_${map_begin_id + index}.dat`)
+              });
 
-          return mapdata;
-        })
-        .then((e) => json2nbt(e))
-        .then((e) => {
-          console.log(e);
-          let zip =  new Zlib.Gzip(e);
-          return zip.compress();
+              function stringToByteArray(str) {
+                  var array = new (window.Uint8Array !== void 0 ? Uint8Array : Array)(str.length);
+                  var i;
+                  var il;
+
+                  for (i = 0, il = str.length; i < il; ++i) {
+                      array[i] = str.charCodeAt(i) & 0xff;
+                  }
+
+                  return array;
+              }
+            });
+            return zip.compress();
+          } else {
+            return null;
+          }
         })
         .then((compressData) => {
-          let blob = new Blob([compressData], { 'type': 'type/' });
-          document.getElementById("download_button").download = nbt_name;
-          document.getElementById("download_button").href = URL.createObjectURL(blob);
+          if (compressData) {
+            let blob = new Blob([compressData], { 'type': 'application/zip' });
+            document.getElementById("download_button").download = "nbtmap.zip";
+            document.getElementById("download_button").href = URL.createObjectURL(blob);
+          }
         })
       }
       // let zip = new Zlib.Gzip(json2nbt(nbt_map_data));
@@ -940,6 +956,7 @@ font-size: x-large;
 
     document.getElementById("writer").onclick = () => {
       // console.log(raw_src_data);
+      src_map_data = [];
       new Promise((resolve, reject) => resolve())
       .then(() => {
         progressBar.set(0.0);
@@ -948,7 +965,18 @@ font-size: x-large;
       .then(() => new Promise(r => setTimeout(r, 100)))
       .then(() => {
         // try {
-          src_map_data = searchColorId(raw_src_data);
+          let selected = document.getElementById("select").childNodes;
+          let max_selected = selected.length;
+          let count = 0;
+          selected.forEach((ele) => {
+            if (ele.classList.contains("select_on")) {
+              let yx = ele.dataset.number.split("-");
+              raw_src_data = ctx.getImageData(Number(yx[1])*128, Number(yx[0])*128, Number(yx[0])*128 + 128, Number(yx[1])*128 + 128);
+              src_map_data.push(searchColorId(raw_src_data));
+              count++;
+              new Promise(resolve => resolve( progressBar.animate(count/max_selected)));
+            }
+          });
           progressBar.animate(1.0);
           document.getElementById("writeState").innerHTML = "finish";
         // } catch(err) {
@@ -972,9 +1000,9 @@ font-size: x-large;
       ctx.drawImage(image, 0, 0);
     }
     
-    document.getElementById("bgcolor").onchange = (e) => {
-      raw_src_data = ctx.getImageData(0, 0, ctx.width, ctx.height);
-    }
+    // document.getElementById("bgcolor").onchange = (e) => {
+    //   raw_src_data = ctx.getImageData(0, 0, ctx.width, ctx.height);
+    // }
   </script>
 </body>
 </html>
