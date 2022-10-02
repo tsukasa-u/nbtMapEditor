@@ -473,10 +473,12 @@ font-size: x-large;
                     selected.innerText = `${i_max*i + j}`;
                     selected.setAttribute("id", "selected");
                     selected.onclick = (e) => {
-                      // e.target.classList.toggle("select_on");
-                      // e.target.classList.toggle("select_off");
-                      e.target.classList.replace("select_on", "select_off");
-                      e.target.classList.replace("select_off", "select_on");
+                      if (e.target.classList.contains("select_off") || e.target.classList.contains("select_on") {
+                        e.target.classList.toggle("select_on");
+                        e.target.classList.toggle("select_off");
+                      }
+                      // e.target.classList.replace("select_on", "select_off");
+                      // e.target.classList.replace("select_off", "select_on");
                     }
                     selected.setAttribute("data-number", `${i}-${j}`);
                     selected.style.top = String(113 + i*128) + "px";
