@@ -75,6 +75,13 @@ font-size: x-large;
     <div>
       <h2>image</h2>
       <canvas id="canvas" ondrop="dropHandlerImage(event)" ondragover="dragOverHandlerImage(event);"></canvas>
+      <br>
+      <div style="margin-left: auto; margin-right: auto; width:fit-content">
+        the youngest Map ID : <input id="mapid" type="number" min="0">
+        <span style="padding-left: 8px;"></span>, <span style="padding-left: 8px;"></span>
+        bgcolor :<input id="bgcolor" type="color" value="#FFFFFF">
+      </div>
+      
     </div>
     <div id="select"></div>
     <div>
@@ -316,7 +323,7 @@ font-size: x-large;
         }, [-1, 9999])[0];
         // console.log(i, colorID[i>>2], src.data.slice(i, i + 3));
         // if (src.data.slice(i, i + 3)[0] != 255)  console.log(i, colorID[i>>2], src.data.slice(i, i + 3));
-        // progressBar.set(i/src.data.length);
+        progressBar.set(i/src.data.length);
       }
       return colorID;
     }
@@ -384,6 +391,9 @@ font-size: x-large;
       removeDragData(ev)
     }
 
+    let ctx;
+    let image;
+
     function dropHandlerImage(ev) {
       console.log('File(s) dropped');
 
@@ -397,8 +407,8 @@ font-size: x-large;
             console.log("type : " + item.type);
             if (item.type.match("^image/png")) {
               
-              let ctx = document.getElementById("canvas").getContext("2d");
-              let image = new Image();
+              ctx = document.getElementById("canvas").getContext("2d");
+              image = new Image();
 
               let reader = new FileReader();
               reader.readAsDataURL(item.getAsFile());
@@ -421,13 +431,16 @@ font-size: x-large;
                 //   map_scale = wScale > hScale ? wScale : hScale;
                 //   if (map_scale > 4) map_scale = 4;
                 // }
-                console.log(String(image.width >> 7 << 7) + "px", String(image.height >> 7 << 7) + "px");
-                canvasStyle.setAttribute("width", String(image.width >> 7 << 7) + "px");
-                canvasStyle.setAttribute("height", String(image.height >> 7 << 7) + "px");
-                canvasStyle.style.width = String(image.width >> 7 << 7) + "px";
-                canvasStyle.style.height = String(image.height >> 7 << 7) + "px";
-                ctx.width = image.width >> 7 << 7;
-                ctx.height = image.height >> 7 << 7;
+                // console.log(String(image.width >> 7 << 7) + "px", String(image.height >> 7 << 7) + "px");
+                let draw_area_width = image.width%128 == 0 ? image.width : (image.width >> 7 << 7) + 128;
+                let draw_area_height = image.height%128 == 0 ? image.height : (image.height >> 7 << 7) + 128;
+
+                canvasStyle.setAttribute("width", String(draw_area_width) + "px");
+                canvasStyle.setAttribute("height", String(draw_area_height) + "px");
+                canvasStyle.style.width = String(draw_area_width) + "px";
+                canvasStyle.style.height = String(draw_area_height) + "px";
+                ctx.width = draw_area_width;
+                ctx.height = draw_area_height;
                 // ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, canvasStyle.width, canvasStyle.width*image.height/image.width);
                 // ctx.drawImage(image, 0, 0, canvasStyle.width, canvasStyle.width);
                 console.log(image);
@@ -445,8 +458,8 @@ font-size: x-large;
                   select.removeChild(element.firstChild);
                 }
 
-                let i_max = image.width >> 7;
-                let j_max = image.width >> 7;
+                let i_max = draw_area_height >> 7;
+                let j_max = draw_area_width >> 7;
                 for (let i = 0; i < i_max; i++) {
                   for (let j = 0; j < j_max; j++) {
                     let selected = document.createElement('div');
@@ -464,8 +477,8 @@ font-size: x-large;
                     }
                     selected.setAttribute("data-number", `${i}-${j}`);
                     selected.style.top = String(113 + i*128) + "px";
-                    // console.log(document.documentElement.clientWidth/2, i, j, (image.width >> 7 << 6));
-                    selected.style.left = String(document.documentElement.clientWidth/2 + j*128 - (image.width >> 7 << 6)) + "px";
+                    // console.log(document.documentElement.clientWidth, document.documentElement.offsetWidth, document.documentElement.scrollWidth);
+                    selected.style.left = String(document.documentElement.scrollWidth/2 + j*128 - (image.width >> 7 << 6)) + "px";
                     select.appendChild(selected);
                   }
                 }
@@ -932,7 +945,7 @@ font-size: x-large;
         progressBar.set(0.0);
         document.getElementById("writeState").innerHTML = "Writing ...";
       })
-      .then(() => new Promise(r => setTimeout(r, 1000)))
+      .then(() => new Promise(r => setTimeout(r, 100)))
       .then(() => {
         // try {
           src_map_data = searchColorId(raw_src_data);
@@ -947,9 +960,20 @@ font-size: x-large;
       // console.log(src_map_data);
     }
 
-    document.getElementById("nbt_zone").onclick = () => {
+    document.getElementById("nbt_zone").onclick = (e) => {
       document.getElementById("nbt_zone").style.height = window.getComputedStyle(document.getElementsByClassName("json-container")[0]).getPropertyValue('height');
       // console.log("ckuck!");
+    }
+
+    document.getElementById("bgcolor").oninput = (e) => {
+      ctx.fillStyle = e.target.value;
+      console.log("change");
+      ctx.fillRect(0, 0, ctx.width, ctx.height);
+      ctx.drawImage(image, 0, 0);
+    }
+    
+    document.getElementById("bgcolor").onchange = (e) => {
+      raw_src_data = ctx.getImageData(0, 0, ctx.width, ctx.height);
     }
   </script>
 </body>
