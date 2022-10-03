@@ -393,7 +393,7 @@ font-size: x-large;
     }
 
     let ctx = document.getElementById("canvas").getContext("2d");
-    let image;
+    let image = new Image();
 
     function dropHandlerImage(ev) {
       console.log('File(s) dropped');
@@ -407,8 +407,6 @@ font-size: x-large;
             // console.log('... file[' + i + '].name = ' + item.name );
             console.log("type : " + item.type);
             if (item.type.match("^image/png")) {
-              
-              image = new Image();
 
               let reader = new FileReader();
               reader.readAsDataURL(item.getAsFile());
