@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <title>hello-wasm example</title>
+  </head>
+  <body>
+    <script type="module">
+      import init, {greet, search_color_id, increment} from "./pkg/hello_wasm.js";
+      init()
+        .then(() => {
+          greet("WebAssembly")
+        }).then(() => {
+          let input = new Uint8Array(12);
+          input.set([128, 128, 128, 0, 130, 130, 130, 0, 80, 80, 80, 0], 0);
+          let output = new Uint8Array(3);
+          output.set([255, 255, 255], 0);
+          let color = new Uint8Array(6);
+          color.set([128, 128, 128, 90, 90, 90], 0);
+          console.log(search_color_id(input, output, color));
+          console.log(output);
+        });
+    </script>
+  </body>
+</html>
