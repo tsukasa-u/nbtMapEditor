@@ -4,26 +4,6 @@ use std::panic;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
-extern {
-    pub fn alert(s: &str);
-}
-
-#[wasm_bindgen]
-pub fn greet(name: &str) {
-    alert(&format!("Hello, {}!", name));
-}
-
-fn tet(num: i32) -> i32 {
-    num + 1
-}
-
-#[wasm_bindgen]
-pub fn increment(num: i32) -> i32 {
-    tet(num + 1)
-}
-
-
-#[wasm_bindgen]
 pub fn rgb2lab(rgb: &[i32], lab: &mut [f32]) {
   let lab_ft: f32 = (6f32/29f32).powi(3);
 
