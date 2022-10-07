@@ -107,6 +107,9 @@ font-size: x-large;
     <script type="text/javascript" src="./progressbar.js-1.0.1/dist/progressbar.min.js"></script>
     <script type="text/javascript">
 
+    import init, {greet, search_color_id, increment} from "./wsam/pkg/hello_wasm.js";
+    let wsam_init = init();
+
     var progressBar = new ProgressBar.Line(container, {
       strokeWidth: 4,
       easing: 'easeInOut',
@@ -972,9 +975,20 @@ font-size: x-large;
             if (ele.classList.contains("select_on")) {
               let yx = ele.dataset.number.split("-");
               raw_src_data = ctx.getImageData(Number(yx[1])*128, Number(yx[0])*128, 128, 128);
-              src_map_data.push(searchColorId(raw_src_data));
+              // src_map_data.push(searchColorId(raw_src_data));
+              wsam_init.then(() => {
+
+                let input = new Uint8Array(raw_src_data.data.len);
+                input.set(raw_src_data.data, 0);
+                let output = new Uint8Array(1<<14);
+                let color = new Uint8Array(colorMap.len*3);
+                color.set(colorMap.flat(), 0);
+                search_color_id(input, output, color);
+                src_map_data.push(output);
+              }).then(() => {
+                progressBar.animate(count/max_selected)
+              })
               count++;
-              new Promise(resolve => resolve( progressBar.animate(count/max_selected)));
             }
           });
           progressBar.animate(1.0);
