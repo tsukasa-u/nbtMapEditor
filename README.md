@@ -1,18 +1,48 @@
-# nbtMapEditor
-minecraftのmapのnbtデータを編集して任意の画像(128×128)に近いブロックの色に置き替えた地図上に書き換えます。
+## How to install
 
-# usage
-1. index.html or https://tsukasa-u.github.io/nbtMapEditor/index.html を起動。※１
-2. 任意のmap_#.datをnbtの枠内にDrag&Drop.
-3. 任意の画像(縦:128px, 横:128px)をimageの枠内にDrag&Drop.
-4. WRITEの文字をClick.書き込みが始まります。
-5. 書き込み終了の表示が出たら、file DownloadのURLをClick.map_#.datのダウンロードが始まります。※2
-6. minecraftのセーブデータのworld/data/に保存。
-7. minecraftにおいて、次のコマンドを実行　\give @p minecraft:filled_map{map:#} 1 
+```sh
+npm install
+```
 
-※１ Chrome  version: 105.0.5195.127(Official Build) (64 ビット)で動作確認済み。firefixでは正常に動作しないことがあります。
+## How to run in debug mode
 
-※２ Download終了と同時にdatファイルがeditorなどで開かれることがあります。
+```sh
+# Builds the project and opens it in a new browser tab. Auto-reloads when the project changes.
+npm start
+```
 
-# image
-本repositoryの画像の著作権はhttps://github.com/noboribe にあります。
+## How to build in release mode
+
+```sh
+# Builds the project and places it into the `dist` folder.
+npm run build
+```
+
+## How to run unit tests
+
+```sh
+# Runs tests in Firefox
+npm test -- --firefox
+
+# Runs tests in Chrome
+npm test -- --chrome
+
+# Runs tests in Safari
+npm test -- --safari
+```
+
+## What does each file do?
+
+* `Cargo.toml` contains the standard Rust metadata. You put your Rust dependencies in here. You must change this file with your details (name, description, version, authors, categories)
+
+* `package.json` contains the standard npm metadata. You put your JavaScript dependencies in here. You must change this file with your details (author, name, version)
+
+* `webpack.config.js` contains the Webpack configuration. You shouldn't need to change this, unless you have very special needs.
+
+* The `js` folder contains your JavaScript code (`index.js` is used to hook everything into Webpack, you don't need to change it).
+
+* The `src` folder contains your Rust code.
+
+* The `static` folder contains any files that you want copied as-is into the final build. It contains an `index.html` file which loads the `index.js` file.
+
+* The `tests` folder contains your Rust unit tests.

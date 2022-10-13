@@ -1,32 +1,25 @@
 {
-  "name": "nbtmapeditor",
-  "version": "1.0.0",
-  "description": "minecraftのmapのnbtデータを編集して任意の画像(128×128)に近いブロックの色に置き替えた地図上に書き換えます。",
-  "main": "index.js",
+  "author": "You <you@example.com>",
+  "name": "rust-webpack-template",
+  "version": "0.1.0",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "webpack --mode development --watch",
-    "build": "webpack --mode=production"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/tsukasa-u/nbtMapEditor.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/tsukasa-u/nbtMapEditor/issues"
-  },
-  "homepage": "https://github.com/tsukasa-u/nbtMapEditor#readme",
-  "dependencies": {
-    "@pgrabovets/json-view": "^2.7.1",
-    "jsoneditor": "^9.9.2",
-    "progressbar.js": "^1.1.0",
-    "webpack-cli": "^4.10.0",
-    "zlibjs": "^0.3.1"
+    "build": "rimraf dist pkg && webpack",
+    "start": "rimraf dist pkg && webpack-dev-server --open -d",
+    "test": "cargo test && wasm-pack test --headless"
   },
   "devDependencies": {
-    "webpack": "^5.74.0"
+    "@wasm-tool/wasm-pack-plugin": "^1.1.0",
+    "copy-webpack-plugin": "^5.0.3",
+    "rimraf": "^3.0.0",
+    "webpack": "^4.42.0",
+    "webpack-cli": "^3.3.3",
+    "webpack-dev-server": "^3.7.1"
+  },
+  "dependencies": {
+    "@pgrabovets/json-view": "^2.7.1",
+    "css-loader": "^5.2.7",
+    "progressbar.js": "^1.1.0",
+    "style-loader": "^2.0.0",
+    "zlibjs": "^0.3.1"
   }
 }

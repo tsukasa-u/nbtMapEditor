@@ -1,14 +1,50 @@
-const path = require('path')
+const path = require("path");
+const CopyPlugin = require("copy-webpack-plugin");
+const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin");
+
+const dist = path.resolve(__dirname, "dist");
 
 module.exports = {
-  resolve: {
-    extensions: ['.js', '.ts']
+  mode: "production",
+  entry: {
+    index: "./js/index.js"
   },
-  target: 'node',
-  entry: './src/index.js',
   output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: 'index.js',
-    publicPath: 'dist/',
+    path: dist,
+    filename: "[name].js"
+  },
+  devServer: {
+    contentBase: dist,
+  },
+  plugins: [
+    new CopyPlugin([
+      path.resolve(__dirname, "static")
+    ]),
+
+    new WasmPackPlugin({
+      crateDirectory: __dirname,
+    }),
+  ],
+  module: {
+    rules: [
+      {
+        test: /\.css/,
+        use: [
+          "style-loader",
+          {
+            loader: "css-loader",
+            options: { url: false }
+          }
+        ]
+      },
+      {
+        test: /\.dat$/i,
+        use: [
+          {
+            loader: 'file-loader',
+          },
+        ],
+      },
+    ]
   }
-}
+};
