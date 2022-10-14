@@ -4,19 +4,10 @@ wasm_module.then(module => {
     console.log(module.test(1));
 });
 
-// import JSONEditor from "jsoneditor/dist/jsoneditor.min";
-// import "jsoneditor/dist/jsoneditor.min.css";
-// import jsonview from '@pgrabovets/json-view/src/json-view';
 import ProgressBar from "progressbar.js";
 import {Zlib as Zlib_gunzip} from 'zlibjs/bin/gunzip.min';
 import {Zlib as Zlib_gzip} from 'zlibjs/bin/gzip.min';
 import {Zlib as Zlib_zip} from 'zlibjs/bin/zip.min';
-// var Unzip= require('zlibjs/bin/unzip.min').Zlib.Unzip
-// import {UnZlib} from 'zlibjs';
-
-// let editor = new JSONEditor(document.getElementById('nbt_zone'));
-
-// editor.set({"null":{}});
 
 var progressBar = new ProgressBar.Line(container, {
     strokeWidth: 4,
@@ -117,16 +108,11 @@ let colorMap = colorBaseMap.reduce((previous, current, index) => {
 
 function searchColorId(src) {
     let colorID = new Uint8Array(src.data.length/4);
-    // colorID.fill(57);
-    // console.log(src.data);
     for (let i = 0; i < src.data.length; i += 4) {
     colorID[i>>2] = colorMap.reduce((previous, current, index) => {
-        // let d = CIE2000(RGB2LAB(src.data.slice(i, i + 3)), RGB2LAB(colorMap[index]));
         let d = CIE2000(RGB2LAB(src.data.slice(i, i + 3)), RGB2LAB(colorMap[index]));
         return previous[1] > d ? [index, d] : previous;
     }, [-1, 9999])[0];
-    // console.log(i, colorID[i>>2], src.data.slice(i, i + 3));
-    // if (src.data.slice(i, i + 3)[0] != 255)  console.log(i, colorID[i>>2], src.data.slice(i, i + 3));
     progressBar.set(i/src.data.length);
     }
     return colorID;
@@ -222,7 +208,6 @@ document.getElementById("canvas").ondrop = (ev) => {
     for (let i = 0; i < ev.dataTransfer.items.length; i++) {
         if (ev.dataTransfer.items[i].kind === 'file') {
         let item = ev.dataTransfer.items[i];
-        // console.log('... file[' + i + '].name = ' + item.name );
         console.log("type : " + item.type);
         if (item.type.match("^image/png")) {
 
@@ -257,28 +242,28 @@ document.getElementById("canvas").ondrop = (ev) => {
             let j_max = draw_area_width >> 7;
             for (let i = 0; i < i_max; i++) {
                 for (let j = 0; j < j_max; j++) {
-                let selected = document.createElement('div');
-                selected.style.backgroundColor = "rgba(128, 128, 128, .2)";
-                selected.style.width = "128px";
-                selected.style.height = "128px";
-                selected.style.position = "absolute";
-                selected.classList.add('select_on');
-                selected.style.border = "dashed gray";
-                selected.innerText = `${i_max*j + i}`;
-                selected.setAttribute("id", "selected");
-                selected.onclick = (e) => {
-                    if (e.target.classList.contains("select_off") || e.target.classList.contains("select_on")) {
-                    e.target.classList.toggle("select_on");
-                    e.target.classList.toggle("select_off");
+                    let selected = document.createElement('div');
+                    selected.style.backgroundColor = "rgba(128, 128, 128, .2)";
+                    selected.style.width = "128px";
+                    selected.style.height = "128px";
+                    selected.style.position = "absolute";
+                    selected.classList.add('select_on');
+                    selected.style.border = "dashed gray";
+                    selected.innerText = `${i_max*j + i}`;
+                    selected.setAttribute("id", "selected");
+                    selected.onclick = (e) => {
+                        if (e.target.classList.contains("select_off") || e.target.classList.contains("select_on")) {
+                            e.target.classList.toggle("select_on");
+                            e.target.classList.toggle("select_off");
+                        }
+                        // e.target.classList.replace("select_on", "select_off");
+                        // e.target.classList.replace("select_off", "select_on");
                     }
-                    // e.target.classList.replace("select_on", "select_off");
-                    // e.target.classList.replace("select_off", "select_on");
-                }
-                selected.setAttribute("data-number", `${i}-${j}`);
-                selected.style.top = String(113 + i*128) + "px";
-                // console.log(document.documentElement.clientWidth, document.documentElement.offsetWidth, document.documentElement.scrollWidth);
-                selected.style.left = String(document.documentElement.scrollWidth/2 + j*128 - (image.width >> 7 << 6)) + "px";
-                select.appendChild(selected);
+                    selected.setAttribute("data-number", `${i}-${j}`);
+                    selected.style.top = String(113 + i*128) + "px";
+                    // console.log(document.documentElement.clientWidth, document.documentElement.offsetWidth, document.documentElement.scrollWidth);
+                    selected.style.left = String(document.documentElement.scrollWidth/2 + j*128 - (j_max << 6)) + "px";
+                    select.appendChild(selected);
                 }
             }
             };
