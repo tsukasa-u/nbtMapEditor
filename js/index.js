@@ -1,8 +1,8 @@
 const wasm_module = import("../pkg/index.js").catch(console.error);
 
-wasm_module.then(module => {
-    console.log(module.test(1));
-});
+// wasm_module.then(module => {
+//     console.log(module.test(1));
+// });
 
 import ProgressBar from "progressbar.js";
 import {Zlib as Zlib_gunzip} from 'zlibjs/bin/gunzip.min';
@@ -635,25 +635,25 @@ document.getElementById("writer").onclick = () => {
         let selected = document.getElementById("select").childNodes;
         let max_selected = selected.length;
         let count = 0;
+        let color = new Uint8Array(colorMap.length*3);
+        color.set(colorMap.flat(), 0);
         selected.forEach((ele) => {
             if (ele.classList.contains("select_on")) {
                 let yx = ele.dataset.number.split("-");
                 raw_src_data = ctx.getImageData(Number(yx[1])*128, Number(yx[0])*128, 128, 128);
-                console.log(raw_src_data);
-                wasm_module.then((module) => {
+                // console.log(raw_src_data);
 
                 let input = new Uint8Array(raw_src_data.data.length);
                 input.set(raw_src_data.data, 0);
                 let output = new Uint8Array(1<<14);
-                let color = new Uint8Array(colorMap.length*3);
-                color.set(colorMap.flat(), 0);
-                module.search_color_id(input, output, color);
-                src_map_data.push(output);
-                // console.log(input);
-                console.log(raw_src_data);
-                // }).then(() => {
-                    progressBar.set(count/max_selected);
+                wasm_module.then((module) => {
+                    module.search_color_id(input, output, color);
+                    // console.log(input);
+                    // console.log(raw_src_data);
+                    // }).then(() => {
                 });
+                src_map_data.push(output);
+                progressBar.set(count/max_selected);
                 count++;
             }
         });
