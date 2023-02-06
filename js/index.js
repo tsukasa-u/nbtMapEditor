@@ -653,6 +653,7 @@ document.getElementById("writer").onclick = () => {
                     // }).then(() => {
                 });
                 src_map_data.push(output);
+                console.log(output);
                 progressBar.set(count/max_selected);
                 count++;
             }
