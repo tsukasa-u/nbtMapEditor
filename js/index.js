@@ -569,7 +569,7 @@ document.getElementById("download_button").onclick = (evt) => {
 
     if (nbt_map_data  && src_map_data) {
     nbt_map_data.then((mapdata) => {
-        console.log(mapdata);
+        // console.log(mapdata);
         mapdata.null.data.data.data.scale.binary.set([map_scale], mapdata.null.data.data.data.scale.binary.length -1);
         mapdata.null.data.data.data.scale.data = map_scale;
 
@@ -578,8 +578,9 @@ document.getElementById("download_button").onclick = (evt) => {
         var zip = new Zlib_zip.Zip();
         let map_begin_id = Number(document.getElementById("mapid").value);
         if (src_map_data) {
+            console.log(src_map_data);
         src_map_data.forEach((ele, index) => {
-            console.log(ele);
+            // console.log(ele);
             let tmp = mapdata.null.data.data.data.colors.binary.slice(0, 9);
             mapdata.null.data.data.data.colors.binary = new Uint8Array(13 + (1 << 14));
             mapdata.null.data.data.data.colors.binary.set(tmp, 0);
