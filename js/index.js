@@ -649,7 +649,8 @@ document.getElementById("writer").onclick = () => {
                 color.set(colorMap.flat(), 0);
                 module.search_color_id(input, output, color);
                 src_map_data.push(output);
-                console.log(input);
+                // console.log(input);
+                console.log(raw_src_data.data);
                 // }).then(() => {
                     progressBar.set(count/max_selected);
                 });
