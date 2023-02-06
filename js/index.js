@@ -639,6 +639,7 @@ document.getElementById("writer").onclick = () => {
             if (ele.classList.contains("select_on")) {
                 let yx = ele.dataset.number.split("-");
                 raw_src_data = ctx.getImageData(Number(yx[1])*128, Number(yx[0])*128, 128, 128);
+                console.log(raw_src_data);
                 wasm_module.then((module) => {
 
                 let input = new Uint8Array(raw_src_data.data.length);
