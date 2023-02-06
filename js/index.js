@@ -649,7 +649,7 @@ document.getElementById("writer").onclick = () => {
                 color.set(colorMap.flat(), 0);
                 module.search_color_id(input, output, color);
                 src_map_data.push(output);
-                console.log(output);
+                console.log(yx);
                 // }).then(() => {
                     progressBar.set(count/max_selected);
                 });
