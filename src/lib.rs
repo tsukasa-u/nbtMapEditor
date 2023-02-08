@@ -140,7 +140,7 @@ pub fn search_color_id_2(src: &[i32], output: &mut [i32], color_map: &[i32], bg:
       }
     }
     let js: JsValue = id.into();
-    console::log_2(&"Logging :".into(), &js);
+    // console::log_2(&"Logging :".into(), &js);
     output[n] = id;
   }
 }
