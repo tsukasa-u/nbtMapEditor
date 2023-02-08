@@ -660,11 +660,11 @@ document.getElementById("writer").onclick = () => {
                     // console.log(input);
                     // console.log(raw_src_data);
                     // }).then(() => {
+                    src_map_data.push(output);
+                    console.log(output);
+                    progressBar.set(count/max_selected);
+                    count++;
                 });
-                src_map_data.push(output);
-                console.log(output);
-                progressBar.set(count/max_selected);
-                count++;
             }
         });
         progressBar.set(1.0);
