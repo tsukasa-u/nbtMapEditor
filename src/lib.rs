@@ -86,7 +86,7 @@ fn cie2000(labch1: &[f32], labch2: &[f32], kl: f32, kc: f32, kh: f32) -> f32 {
 }
 
 #[wasm_bindgen]
-pub fn search_color_id(src: &[i32], output: &mut [i32], color_map: &[i32]) {
+pub fn search_color_id(src: &[i32], output: &mut [i32], color_map: &[i32], bg: &[i32]) {
   panic::set_hook(Box::new(console_error_panic_hook::hook));
 
   let mut min:f32 = 100f32;
@@ -96,10 +96,43 @@ pub fn search_color_id(src: &[i32], output: &mut [i32], color_map: &[i32]) {
   for n in 0..output.len() {
     id = 0i32;
     min = 100f32;
+    let alpha: &i32 = &src[4*n + 3];
+    let a: [i32; 3] = [
+      bg[0] + (src[4*n    ] - bg[0])*alpha/255,
+      bg[1] + (src[4*n + 1] - bg[1])*alpha/255,
+      bg[2] + (src[4*n + 2] - bg[2])*alpha/255,
+    ];
     for _i in 0..(color_map.len()/3usize) {
-      rgb2lab(&(src[4*n..(4*n + 3)]), &mut lab1);
+      // rgb2lab(&(src[4*n..(4*n + 3)]), &mut lab1);
+      rgb2lab(&a, &mut lab1);
       rgb2lab(&(color_map[3*_i..(3*_i + 3)]), &mut lab2);
       let d: f32 = cie2000(&lab1, &lab2, 1.835f32, 1f32, 1f32);
+      if min > d {
+        min = d;
+        id = _i as i32;
+      }
+    }
+    output[n] = id;
+  }
+}
+
+#[wasm_bindgen]
+pub fn search_color_id_2(src: &[i32], output: &mut [i32], color_map: &[i32], bg: &[i32]) {
+  panic::set_hook(Box::new(console_error_panic_hook::hook));
+
+  let mut min:f32 = 100f32;
+  let mut id:i32 = 0;
+  for n in 0..output.len() {
+    id = 0i32;
+    min = 100f32;
+    let alpha: &i32 = &src[4*n + 3];
+    let a: [i32; 3] = [
+      bg[0] + (src[4*n    ] - bg[0])*alpha/255,
+      bg[1] + (src[4*n + 1] - bg[1])*alpha/255,
+      bg[2] + (src[4*n + 2] - bg[2])*alpha/255,
+    ];
+    for _i in 0..(color_map.len()/3usize) {
+      let d: f32 = ((color_map[3*_i]-a[0]).pow(2)+(color_map[3*_i+1]-a[1]).pow(2)+(color_map[3*_i+2]-a[2]).pow(2)) as f32;
       if min > d {
         min = d;
         id = _i as i32;
