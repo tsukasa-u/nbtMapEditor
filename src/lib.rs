@@ -123,7 +123,7 @@ pub fn search_color_id_2(src: &[i32], output: &mut [i32], color_map: &[i32], bg:
   let mut min:f32 = 100f32;
   let mut id:i32 = 0;
   for n in 0..output.len() {
-    id = 0i32;
+    id = 100i32;
     min = 1000000f32;
     let alpha: &i32 = &src[4*n + 3];
     let a: [i32; 3] = [
