@@ -117,6 +117,7 @@ pub fn search_color_id(src: &[i32], output: &mut [i8], color_map: &[i32], bg: &[
     }
     output[n] = id as i8;
   }
+  console::log_2(&"Logging :".into(), &1.into());
 }
 
 #[wasm_bindgen]
