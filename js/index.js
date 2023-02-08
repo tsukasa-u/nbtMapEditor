@@ -655,7 +655,7 @@ document.getElementById("writer").onclick = () => {
                     if (is_use_cie2000) {
                         module.search_color_id(input, output, color, inputbg);
                     } else {
-                        module.search_color_id2(input, output, color, inputbg);
+                        module.search_color_id_2(input, output, color, inputbg);
                     }
                     // console.log(input);
                     // console.log(raw_src_data);
