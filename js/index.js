@@ -624,6 +624,7 @@ document.getElementById("download_button").onclick = (evt) => {
 
 document.getElementById("writer").onclick = () => {
     src_map_data = [];
+    let is_use_cie2000 = document.getElementById("cie2000").checked;
     new Promise(async (resolve, reject) => resolve())
     .then(() => {
     progressBar.set(0.0);
@@ -651,7 +652,11 @@ document.getElementById("writer").onclick = () => {
                 input.set(raw_src_data.data, 0);
                 let output = new Uint8Array(1<<14);
                 wasm_module.then((module) => {
-                    module.search_color_id(input, output, color, inputbg);
+                    if (is_use_cie2000) {
+                        module.search_color_id(input, output, color, inputbg);
+                    } else {
+                        module.search_color_id2(input, output, color, inputbg);
+                    }
                     // console.log(input);
                     // console.log(raw_src_data);
                     // }).then(() => {
