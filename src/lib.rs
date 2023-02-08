@@ -94,8 +94,8 @@ pub fn search_color_id(src: &[i32], output: &mut [i8], color_map: &[i32], bg: &[
   let mut id:i32 = 0;
   let mut lab1: [f32; 4] = [0f32; 4];
   let mut lab2: [f32; 4] = [0f32; 4];
-  let js: JsValue = output.len().into();
-  console::log_2(&"Logging : output.len".into(), &js);
+  // let js: JsValue = output.len().into();
+  // console::log_2(&"Logging : output.len".into(), &js);
   for n in 0..output.len() {
     id = 0i32;
     min = 100f32;
@@ -117,11 +117,11 @@ pub fn search_color_id(src: &[i32], output: &mut [i8], color_map: &[i32], bg: &[
     }
     output[n] = id as i8;
   }
-  console::log_2(&"Logging :".into(), &1.into());
+  // console::log_2(&"Logging :".into(), &1.into());
 }
 
 #[wasm_bindgen]
-pub fn search_color_id_2(src: &[i32], output: &mut [i32], color_map: &[i32], bg: &[i32]) {
+pub fn search_color_id_2(src: &[i32], output: &mut [i8], color_map: &[i32], bg: &[i32]) {
   panic::set_hook(Box::new(console_error_panic_hook::hook));
 
   let mut min:f32 = 100f32;
@@ -144,6 +144,6 @@ pub fn search_color_id_2(src: &[i32], output: &mut [i32], color_map: &[i32], bg:
     }
     // let js: JsValue = id.into();
     // console::log_2(&"Logging :".into(), &js);
-    output[n] = id;
+    output[n] = id as i8;
   }
 }
