@@ -87,7 +87,7 @@ fn cie2000(labch1: &[f32], labch2: &[f32], kl: f32, kc: f32, kh: f32) -> f32 {
 }
 
 #[wasm_bindgen]
-pub fn search_color_id(src: &[i32], output: &mut [i32], color_map: &[i32], bg: &[i32]) {
+pub fn search_color_id(src: &[i32], output: &mut [i8], color_map: &[i32], bg: &[i32]) {
   panic::set_hook(Box::new(console_error_panic_hook::hook));
 
   let mut min:f32 = 1000000f32;
@@ -115,7 +115,7 @@ pub fn search_color_id(src: &[i32], output: &mut [i32], color_map: &[i32], bg: &
         id = _i as i32;
       }
     }
-    output[n] = id;
+    output[n] = id as i8;
   }
 }
 
