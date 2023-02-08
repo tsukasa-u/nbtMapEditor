@@ -89,7 +89,7 @@ fn cie2000(labch1: &[f32], labch2: &[f32], kl: f32, kc: f32, kh: f32) -> f32 {
 pub fn search_color_id(src: &[i32], output: &mut [i32], color_map: &[i32], bg: &[i32]) {
   panic::set_hook(Box::new(console_error_panic_hook::hook));
 
-  let mut min:f32 = 100f32;
+  let mut min:f32 = 1000000f32;
   let mut id:i32 = 0;
   let mut lab1: [f32; 4] = [0f32; 4];
   let mut lab2: [f32; 4] = [0f32; 4];
@@ -124,7 +124,7 @@ pub fn search_color_id_2(src: &[i32], output: &mut [i32], color_map: &[i32], bg:
   let mut id:i32 = 0;
   for n in 0..output.len() {
     id = 0i32;
-    min = 100f32;
+    min = 1000000f32;
     let alpha: &i32 = &src[4*n + 3];
     let a: [i32; 3] = [
       src[4*n    ] - (src[4*n    ] - bg[0])*alpha/255,
