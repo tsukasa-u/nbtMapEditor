@@ -4,6 +4,7 @@ use std::panic;
 
 use wasm_bindgen::prelude::*;
 use web_sys::console;
+use wasm_bindgen::prelude::*;
 
 
 // When the `wee_alloc` feature is enabled, this uses `wee_alloc` as the global
@@ -138,6 +139,8 @@ pub fn search_color_id_2(src: &[i32], output: &mut [i32], color_map: &[i32], bg:
         id = _i as i32;
       }
     }
+    let js: JsValue = id.into();
+    console::log_2(&"Logging :".into(), &js);
     output[n] = id;
   }
 }
