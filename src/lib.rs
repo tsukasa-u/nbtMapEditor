@@ -125,11 +125,11 @@ pub fn search_color_id_2(src: &[i32], output: &mut [i32], color_map: &[i32], bg:
   for n in 0..output.len() {
     id = 100i32;
     min = 1000000f32;
-    let alpha: &i32 = &src[4*n + 3];
+    let alpha: f32 = src[4*n + 3] as f32;
     let a: [i32; 3] = [
-      src[4*n    ] - (src[4*n    ] - bg[0])*alpha/255,
-      src[4*n + 1] - (src[4*n + 1] - bg[1])*alpha/255,
-      src[4*n + 2] - (src[4*n + 2] - bg[2])*alpha/255,
+      src[4*n    ] - ((src[4*n    ] - bg[0]) as f32 *alpha/255.0f32) as i32,
+      src[4*n + 1] - ((src[4*n + 1] - bg[1]) as f32 *alpha/255.0f32) as i32,
+      src[4*n + 2] - ((src[4*n + 2] - bg[2]) as f32 *alpha/255.0f32) as i32,
     ];
     for _i in 0..(color_map.len()/3usize) {
       let d: f32 = ((color_map[3*_i]-a[0]).pow(2)+(color_map[3*_i+1]-a[1]).pow(2)+(color_map[3*_i+2]-a[2]).pow(2)) as f32;
