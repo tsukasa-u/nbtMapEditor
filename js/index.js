@@ -636,6 +636,10 @@ document.getElementById("writer").onclick = () => {
         let max_selected = selected.length;
         let count = 0;
         let color = new Uint8Array(colorMap.length*3);
+        let bg = Number(document.getElementById("bgcolor").value.slice(1));
+        let bgcolor = [(bg >> 16) & 0xFF, (bg >> 8) & 0xFF, bg & 0xFF];
+        let inputbg = new Uint8Array(3);
+        inputbg.set(bgcolor);
         color.set(colorMap.flat(), 0);
         selected.forEach((ele) => {
             if (ele.classList.contains("select_on")) {
@@ -647,7 +651,7 @@ document.getElementById("writer").onclick = () => {
                 input.set(raw_src_data.data, 0);
                 let output = new Uint8Array(1<<14);
                 wasm_module.then((module) => {
-                    module.search_color_id(input, output, color);
+                    module.search_color_id(input, output, color, inputbg);
                     // console.log(input);
                     // console.log(raw_src_data);
                     // }).then(() => {
