@@ -661,9 +661,9 @@ document.getElementById("writer").onclick = () => {
                     // console.log(raw_src_data);
                     // }).then(() => {
                     src_map_data.push(output);
-                    console.log(output);
-                    progressBar.set(count/max_selected);
+                    // console.log(output);
                     count++;
+                    progressBar.set(count/max_selected);
                 });
             }
         });
