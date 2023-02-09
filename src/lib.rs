@@ -106,7 +106,7 @@ pub fn search_color_id(src: &[i32], output: &mut [i8], color_map: &[i32], bg: &[
       bg[2] + (src[4*n + 2] - bg[2])*alpha/255,
     ];
     // let js: JsValue = output.len().into();
-    console::log_2(&bg[0].into(), &a[0].into());
+    console::log_3(&bg[0].into(), &a[0].into(), &src[4*n    ].into());
     for _i in 0..(color_map.len()/3usize) {
       // rgb2lab(&(src[4*n..(4*n + 3)]), &mut lab1);
       rgb2lab(&a, &mut lab1);
@@ -137,6 +137,7 @@ pub fn search_color_id_2(src: &[i32], output: &mut [i8], color_map: &[i32], bg: 
       src[4*n + 1] - ((src[4*n + 1] - bg[1]) as f32 *alpha/255.0f32) as i32,
       src[4*n + 2] - ((src[4*n + 2] - bg[2]) as f32 *alpha/255.0f32) as i32,
     ];
+    console::log_3(&bg[0].into(), &a[0].into(), &src[4*n    ].into());
     for _i in 0..(color_map.len()/3usize) {
       let d: f32 = ((color_map[3*_i]-a[0]).pow(2)+(color_map[3*_i+1]-a[1]).pow(2)+(color_map[3*_i+2]-a[2]).pow(2)) as f32;
       if min > d {
