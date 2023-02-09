@@ -101,9 +101,9 @@ pub fn search_color_id(src: &[i32], output: &mut [i8], color_map: &[i32], bg: &[
     min = 100f32;
     let alpha: &i32 = &src[4*n + 3];
     let a: [i32; 3] = [
-      src[4*n    ] - (src[4*n    ] - bg[0])*alpha/255,
-      src[4*n + 1] - (src[4*n + 1] - bg[1])*alpha/255,
-      src[4*n + 2] - (src[4*n + 2] - bg[2])*alpha/255,
+      bg[0] + (src[4*n    ] - bg[0])*alpha/255,
+      bg[1] + (src[4*n + 1] - bg[1])*alpha/255,
+      bg[2] + (src[4*n + 2] - bg[2])*alpha/255,
     ];
     // let js: JsValue = output.len().into();
     // console::log_3(&bg[0].into(), &a[0].into(), &src[4*n    ].into());
@@ -134,9 +134,9 @@ pub fn search_color_id_2(src: &[i32], output: &mut [i8], color_map: &[i32], bg: 
     min = 1000000f32;
     let alpha: &i32 = &src[4*n + 3];
     let a: [i32; 3] = [
-      src[4*n    ] - (src[4*n    ] - bg[0])*alpha/255,
-      src[4*n + 1] - (src[4*n + 1] - bg[1])*alpha/255,
-      src[4*n + 2] - (src[4*n + 2] - bg[2])*alpha/255,
+      bg[0] + (src[4*n    ] - bg[0])*alpha/255,
+      bg[1] + (src[4*n + 1] - bg[1])*alpha/255,
+      bg[2] + (src[4*n + 2] - bg[2])*alpha/255,
     ];
     // console::log_5(&src[4*n + 3].into(), &src[4*n    ].into(), &(src[4*n    ] - bg[0]).into(), &((src[4*n    ] - bg[0])*alpha).into(), &((src[4*n    ] - bg[0])*alpha>>8).into());
     for _i in 0..(color_map.len()/3usize) {
