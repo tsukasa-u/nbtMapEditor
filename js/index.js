@@ -637,7 +637,7 @@ document.getElementById("writer").onclick = () => {
         let max_selected = selected.length;
         let count = 0;
         let color = new Uint8Array(colorMap.length*3);
-        let bg = Number(document.getElementById("bgcolor").value.slice(1));
+        let bg = parseInt(document.getElementById("bgcolor").value.slice(1), 16);
         let bgcolor = [(bg >> 16) & 0xFF, (bg >> 8) & 0xFF, bg & 0xFF];
         let inputbg = new Uint8Array(3);
         inputbg.set(bgcolor);
