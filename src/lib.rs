@@ -113,6 +113,7 @@ pub fn search_color_id(src: &[i32], output: &mut [i8], color_map: &[i32], bg: &[
       rgb2lab(&(color_map[3*_i..(3*_i + 3)]), &mut lab2);
       // let d: f32 = cie2000(&lab1, &lab2, 1.835f32, 1f32, 1f32);
       let d: f32 = cie2000(&lab1, &lab2, 1f32, 1f32, 1f32);
+      let d: f32 = cie2000(&lab1, &lab2, 1f32, 0.045f32, 0.015f32);
       if min > d {
         min = d;
         id = _i as i32;
