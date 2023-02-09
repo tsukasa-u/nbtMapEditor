@@ -87,7 +87,7 @@ fn cie2000(labch1: &[f32], labch2: &[f32], kl: f32, kc: f32, kh: f32) -> f32 {
 }
 
 #[wasm_bindgen]
-pub fn search_color_id(src: &[i32], output: &mut [i8], color_map: &[i32], bg: &[i32]) {
+pub fn search_color_id(src: &[i32], output: &mut [u8], color_map: &[i32], bg: &[i32], out_image: &mut [u8]) {
   panic::set_hook(Box::new(console_error_panic_hook::hook));
 
   let mut min:f32 = 1000000f32;
@@ -118,13 +118,17 @@ pub fn search_color_id(src: &[i32], output: &mut [i8], color_map: &[i32], bg: &[
         id = _i as i32;
       }
     }
-    output[n] = id as i8;
+    output[n] = id as u8;
+    out_image[4*n    ] = color_map[3*(id as usize)    ] as u8;
+    out_image[4*n + 1] = color_map[3*(id as usize) + 1] as u8;
+    out_image[4*n + 2] = color_map[3*(id as usize) + 2] as u8;
+    out_image[4*n + 3] = 255u8;
   }
   // console::log_2(&"Logging :".into(), &1.into());
 }
 
 #[wasm_bindgen]
-pub fn search_color_id_2(src: &[i32], output: &mut [i8], color_map: &[i32], bg: &[i32]) {
+pub fn search_color_id_2(src: &[i32], output: &mut [u8], color_map: &[i32], bg: &[i32], out_image: &mut [u8]) {
   panic::set_hook(Box::new(console_error_panic_hook::hook));
 
   let mut min:f32 = 100f32;
@@ -148,6 +152,10 @@ pub fn search_color_id_2(src: &[i32], output: &mut [i8], color_map: &[i32], bg: 
     }
     // let js: JsValue = id.into();
     // console::log_2(&"Logging :".into(), &js);
-    output[n] = id as i8;
+    output[n] = id as u8;
+    out_image[4*n    ] = color_map[3*(id as usize)    ] as u8;
+    out_image[4*n + 1] = color_map[3*(id as usize) + 1] as u8;
+    out_image[4*n + 2] = color_map[3*(id as usize) + 2] as u8;
+    out_image[4*n + 3] = 255u8;
   }
 }
