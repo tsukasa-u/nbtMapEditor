@@ -138,7 +138,7 @@ pub fn search_color_id_2(src: &[i32], output: &mut [i8], color_map: &[i32], bg: 
       src[4*n + 1] - (src[4*n + 1] - bg[1])*alpha/255,
       src[4*n + 2] - (src[4*n + 2] - bg[2])*alpha/255,
     ];
-    console::log_3(&bg[0].into(), &a[0].into(), &src[4*n    ].into());
+    console::log_3(&src[4*n    ].into(), &(src[4*n    ] - bg[0]).into(), &((src[4*n    ] - bg[0])*alpha/255).into());
     for _i in 0..(color_map.len()/3usize) {
       let d: f32 = ((color_map[3*_i]-a[0]).pow(2)+(color_map[3*_i+1]-a[1]).pow(2)+(color_map[3*_i+2]-a[2]).pow(2)) as f32;
       if min > d {
