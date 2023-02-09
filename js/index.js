@@ -196,7 +196,10 @@ nbt_map_data = fetch("./map_0.dat")
 // }
 
 let ctx = document.getElementById("canvas").getContext("2d");
+let ctx_out = document.getElementById("canvas2").getContext("2d");
 let image = new Image();
+let draw_area_width = 128;
+let draw_area_height = 128;
 
 // function dropHandlerImage(ev) {
 document.getElementById("canvas").ondrop = (ev) => {
@@ -221,8 +224,8 @@ document.getElementById("canvas").ondrop = (ev) => {
             console.log("load");
             let canvasStyle = document.querySelector('#canvas');
             map_scale = 0;
-            let draw_area_width = image.width%128 == 0 ? image.width : (image.width >> 7 << 7) + 128;
-            let draw_area_height = image.height%128 == 0 ? image.height : (image.height >> 7 << 7) + 128;
+            draw_area_width = image.width%128 == 0 ? image.width : (image.width >> 7 << 7) + 128;
+            draw_area_height = image.height%128 == 0 ? image.height : (image.height >> 7 << 7) + 128;
 
             canvasStyle.setAttribute("width", String(draw_area_width) + "px");
             canvasStyle.setAttribute("height", String(draw_area_height) + "px");
@@ -645,6 +648,18 @@ document.getElementById("writer").onclick = () => {
         // console.log(bgcolor);
         // console.log(bg);
         color.set(colorMap.flat(), 0);
+
+        
+        let canvasStyle = document.querySelector('#canvas2');
+        canvasStyle.setAttribute("width", String(draw_area_width) + "px");
+        canvasStyle.setAttribute("height", String(draw_area_height) + "px");
+        canvasStyle.style.width = String(draw_area_width) + "px";
+        canvasStyle.style.height = String(draw_area_height) + "px";
+        ctx_out.width = draw_area_width;
+        ctx_out.height = draw_area_height;
+        // console.log(image);
+
+
         selected.forEach((ele) => {
             if (ele.classList.contains("select_on")) {
                 let yx = ele.dataset.number.split("-");
@@ -652,26 +667,27 @@ document.getElementById("writer").onclick = () => {
                 // console.log(raw_src_data);
 
                 let input = new Uint8Array(raw_src_data.data.length);
+                let out_image = new Uint8Array(raw_src_data.data.length);
                 input.set(raw_src_data.data, 0);
                 let output = new Uint8Array(1<<14);
                 wasm_module.then((module) => {
                     if (is_use_cie2000) {
-                        module.search_color_id(input, output, color, inputbg);
+                        module.search_color_id(input, output, color, inputbg, out_image);
                     } else {
-                        module.search_color_id_2(input, output, color, inputbg);
+                        module.search_color_id_2(input, output, color, inputbg, out_image);
                     }
-                    // console.log(input);
-                    // console.log(raw_src_data);
-                    // }).then(() => {
                     src_map_data.push(output);
-                    // console.log(output);
                     count++;
                     progressBar.set(count/max_selected);
+                    
+                    ctx_out.putImageData(new ImageData(out_image, 128, 128), Number(yx[1])*128, Number(yx[0])*128);
                 });
             }
         });
         progressBar.set(1.0);
         document.getElementById("writeState").innerHTML = "finish";
+
+        
     });
 }
 
