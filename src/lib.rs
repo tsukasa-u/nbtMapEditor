@@ -105,6 +105,8 @@ pub fn search_color_id(src: &[i32], output: &mut [i8], color_map: &[i32], bg: &[
       bg[1] + (src[4*n + 1] - bg[1])*alpha/255,
       bg[2] + (src[4*n + 2] - bg[2])*alpha/255,
     ];
+    // let js: JsValue = output.len().into();
+    console::log_2(&bg[0].into(), &a[0].into());
     for _i in 0..(color_map.len()/3usize) {
       // rgb2lab(&(src[4*n..(4*n + 3)]), &mut lab1);
       rgb2lab(&a, &mut lab1);
