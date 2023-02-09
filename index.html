@@ -28,6 +28,19 @@
       left: 0;
       margin: auto;
     }
+    #canvas2 {
+      width:  128px;
+      height: 128px;
+      margin: 0;
+      padding: 32px;
+      border-radius: 30px;
+      border: 5px solid #ccc;
+      display: block;
+      /* position: absolute; */
+      right: 0;
+      left: 0;
+      margin: auto;
+    }
     #nbt_zone {
       overflow: hidden;
       border: 5px solid #ccc;
@@ -91,11 +104,18 @@ font-size: x-large;
       <div id="nbt_zone" clss="tree"></div>
     </div> -->
     <div id="centerArea">
-      <div id="writer">
+      <div id="writer" style="width:150px; background-color:#ffdd33;
+      margin-left: auto;
+      margin-right: auto;
+      border-radius: 15px;">
         <h2>WRITE</h2>
-        <p id="writeState"></p>
-        <div id="container"></div>
       </div>
+      <p id="writeState"></p>
+      <div id="container"></div>
+    </div>
+    <div>
+      <h2>map image</h2>
+      <canvas id="canvas2"></canvas>
     </div>
     <div id="centerArea">
       <h2>file download</h2>
