@@ -680,7 +680,7 @@ document.getElementById("writer").onclick = () => {
                     count++;
                     progressBar.set(count/max_selected);
                     
-                    ctx_out.putImageData(new ImageData(out_image, 128, 128), Number(yx[1])*128, Number(yx[0])*128);
+                    ctx_out.putImageData(new ImageData(new Uint8ClampedArray(out_image), 128, 128), Number(yx[1])*128, Number(yx[0])*128);
                 });
             }
         });
