@@ -641,7 +641,9 @@ document.getElementById("writer").onclick = () => {
         let bgcolor = [(bg >> 16) & 0xFF, (bg >> 8) & 0xFF, bg & 0xFF];
         let inputbg = new Uint8Array(3);
         inputbg.set(bgcolor);
-        console.log(inputbg, bgcolor, bg);
+        console.log(inputbg);
+        console.log(bgcolor);
+        console.log(bg);
         color.set(colorMap.flat(), 0);
         selected.forEach((ele) => {
             if (ele.classList.contains("select_on")) {
