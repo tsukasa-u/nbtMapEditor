@@ -50,40 +50,56 @@ pub fn rgb2lab(rgb: &[i32], lab: &mut [f32]) {
 fn cie2000(labch1: &[f32], labch2: &[f32], kl: f32, kc: f32, kh: f32) -> f32 {
   let deltal: f32 = labch2[0] - labch1[0];
   let l_: f32 = (labch2[0] + labch1[0])/2f32;
-  let c_: f32 = (labch2[3] + labch1[3])/2f32; 
-  let a1p: f32 = labch1[1] + labch1[1]/2f32*(1f32 - (c_.powi(7)/(c_.powi(7) + 25f32.powi(7)).sqrt()));
-  let a2p: f32 = labch2[1] + labch2[1]/2f32*(1f32 - (c_.powi(7)/(c_.powi(7) + 25f32.powi(7)).sqrt()));
-  let c1p: f32 = (a1p*a1p + labch1[2]*labch1[2]).sqrt();
-  let c2p: f32 = (a2p*a2p + labch2[2]*labch2[2]).sqrt();
+  let c_: f32 = (labch2[3] + labch1[3])/2f32;
+  let pow_c_7: f32 = c_.powi(7);
+  let pow_25_7: f32 = 25f32.powi(7);
+  let G_: f32 = 0.5f32*(1f32 - (pow_c_7/(pow_c_7 + pow_25_7)).sqrt());
+  let a1p: f32 = labch1[1]*(1f32 + G_);
+  let a2p: f32 = labch2[1]*(1f32 + G_);
+  let c1p: f32 = (a1p.powi(2) + labch1[2].powi(2)).sqrt();
+  let c2p: f32 = (a2p.powi(2) + labch2[2].powi(2)).sqrt();
   let cp_: f32 = (c1p + c2p)/2f32;
-  let deltacp: f32 = c1p - c2p;
-  let mut h1p: f32 = labch1[2].atan2(a1p);
+  let deltacp: f32 = c2p - c1p;
+  let mut h1p: f32 = if labch1[2] == 0f32 && a1p == 0f32 { 0f32 } else { labch1[2].atan2(a1p) };
   if h1p < 0f32 {h1p += 2f32*std::f32::consts::PI;}
-  let mut h2p: f32 = labch2[2].atan2(a2p);
+  let mut h2p: f32 = if labch2[2] == 0f32 && a2p == 0f32 { 0f32 } else { labch2[2].atan2(a2p) };
   if h2p < 0f32 {h2p += 2f32*std::f32::consts::PI};
   let  deltah: f32;
-  if (h2p - h1p).abs() <= std::f32::consts::PI {
-    deltah = h2p - h1p;
-  } else {
-    if h2p <= h1p {
-      deltah = h2p - h1p + 2f32*std::f32::consts::PI;
+    if c1p*c2p==0f32 {
+        deltah =  0f32;
     } else {
-      deltah = h2p - h1p - 2f32*std::f32::consts::PI;
+        if (h2p - h1p).abs() <= std::f32::consts::PI {
+            deltah =  h2p - h1p;
+        } else {
+            if h2p - h1p < -std::f32::consts::PI {
+                deltah =  h2p - h1p + 2f32*std::f32::consts::PI;
+            } else {
+                deltah =  h2p - h1p - 2f32*std::f32::consts::PI;
+            }
+        }
+    }
+  let deltaH: f32 = 2f32*(c1p*c2p).sqrt()*((deltah/2f32).sin());
+  let h_: f32;
+  if c1p*c2p == 0f32 {
+    h_ = 0f32;
+  } else {
+    if (h2p - h1p).abs() <= std::f32::consts::PI {
+      h_ = (h2p + h1p)/2f32;
+    } else {
+      if h2p + h1p < 2f32*std::f32::consts::PI {
+        h_ = (h2p + h1p)/2f32 + std::f32::consts::PI;
+      } else {
+        h_ = (h2p + h1p)/2f32 - std::f32::consts::PI;
+      }
     }
   }
-  let deltah: f32 = 2f32*(c1p*c2p).sqrt()*(deltah/2f32).sin();
-  let h_: f32;
-  if (h2p - h1p).abs() <= std::f32::consts::PI {
-    h_ = (h2p + h1p)/2f32;
-  } else {
-    h_ = (h2p + h1p + 2f32*std::f32::consts::PI)/2f32;
-  }
-  let t: f32 = 1f32 - 0.17f32*(h_ - std::f32::consts::PI/6f32).cos() + 0.24f32*(2f32*h_).cos() + 0.32f32*(3f32*h_ + std::f32::consts::PI/30f32).cos() - 0.20f32*(4f32*h_ - 0.35f32*std::f32::consts::PI).cos();
-  let sl: f32 = 1f32 + 0.015f32*(l_ - 50f32).powi(2)/(20f32 + (l_ - 50f32).powi(2)).sqrt();
+  let t: f32 = 1f32 - 0.17f32*((h_ - std::f32::consts::PI/6f32).cos()) + 0.24f32*((2f32*h_).cos()) + 0.32f32*((3f32*h_ + std::f32::consts::PI/30f32).cos()) - 0.20f32*((4f32*h_ - 0.35f32*std::f32::consts::PI).cos());
+  let sl: f32 = 1f32 + 0.015f32*((l_ - 50f32).powi(2))/(20f32 + (l_ - 50f32).powi(2)).sqrt();
   let sc = 1f32 + 0.045f32*cp_;
   let sh = 1f32 + 0.015f32*cp_*t;
-  let rt = -2f32*(cp_.powi(7)/(cp_.powi(7) + (25f32).powi(7))).sqrt()*(std::f32::consts::PI/3f32*(((h_ - 275f32/180f32*std::f32::consts::PI)/(25f32/180f32*std::f32::consts::PI)).powi(2)).exp()).sin();
-  return ((deltal/kl/sl).powi(2) + (deltacp/kc/sc).powi(2) + (deltah/kh/sh).powi(2) + rt*deltacp/kc/sc*deltah/kh/sh).sqrt();
+  let pow_cp_7: f32 = cp_.powi(7);
+  let rt = -2f32*(pow_cp_7/(pow_cp_7 + pow_25_7)).sqrt()*((std::f32::consts::PI/3f32*((-((h_*180f32/std::f32::consts::PI - 275f32)/25f32).powi(2)).exp())).sin());
+  return ((deltal/kl/sl).powi(2) + (deltacp/kc/sc).powi(2) + (deltaH/kh/sh).powi(2) + rt*deltacp/kc/sc*deltaH/kh/sh).sqrt();
 }
 
 #[wasm_bindgen]
