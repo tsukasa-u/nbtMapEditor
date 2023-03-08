@@ -244,7 +244,8 @@ pub fn search_color_id(src: &[i32], output: &mut [u8], color_map: &[i32], bg: &[
 
       let _i: usize = id as usize;
       rgb2lab(&(color_map[3*_i..(3*_i + 3)]), &mut lab2);
-      let err_f: [f32; 3] = [lab1[0] -lab2[0], lab1[1] -lab2[1], lab1[2] -lab2[2]];
+      let err_f: [f32; 3] = [lab2[0] - lab1[0], lab2[1] - lab1[1], lab2[2] - lab1[2]];
+      // let err_f: [f32; 3] = [lab1[0] - lab2[0], lab1[1] - lab2[1], lab1[2] - lab2[2]];
 
       if n%128 < 127 {
         let mut tmp: &[f32; 3] = &daynamic_buffer[n + 1];
