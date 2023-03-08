@@ -672,9 +672,9 @@ document.getElementById("writer").onclick = () => {
                 let output = new Uint8Array(1<<14);
                 wasm_module.then((module) => {
                     if (is_use_cie2000) {
-                        module.search_color_id(input, output, color, inputbg, out_image);
+                        module.search_color_id(input, output, color, inputbg, out_image, 1);
                     } else {
-                        module.search_color_id_2(input, output, color, inputbg, out_image);
+                        module.search_color_id(input, output, color, inputbg, out_image, 0);
                     }
                     src_map_data.push(output);
                     count++;
