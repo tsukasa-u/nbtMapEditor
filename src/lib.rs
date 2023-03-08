@@ -202,11 +202,12 @@ pub fn search_color_id(src: &[i32], output: &mut [u8], color_map: &[i32], bg: &[
       bg[1] + (src[4*n + 1] - bg[1])*alpha/255,
       bg[2] + (src[4*n + 2] - bg[2])*alpha/255,
     ];
+    let mut lab3: [f32; 4] = [0.0; 4];
     // console::log_5(&src[4*n + 3].into(), &src[4*n    ].into(), &(src[4*n    ] - bg[0]).into(), &((src[4*n    ] - bg[0])*alpha).into(), &((src[4*n    ] - bg[0])*alpha>>8).into());
     for _i in 0..(color_map.len()/3usize) {
       rgb2lab(&a, &mut lab1);
       rgb2lab(&(color_map[3*_i..(3*_i + 3)]), &mut lab2);
-      let mut lab3: [f32; 4] = if use_method & 0b10 == 0b10 {
+      lab3 = if use_method & 0b10 == 0b10 {
         let mut tmp_lab: [f32; 4] = [{
             let tmp = lab1[0] + daynamic_buffer[n][0];
             if tmp < 0.0 { 0.0 } 
@@ -244,7 +245,7 @@ pub fn search_color_id(src: &[i32], output: &mut [u8], color_map: &[i32], bg: &[
 
       let _i: usize = id as usize;
       rgb2lab(&(color_map[3*_i..(3*_i + 3)]), &mut lab2);
-      let err_f: [f32; 3] = [lab2[0] - lab1[0], lab2[1] - lab1[1], lab2[2] - lab1[2]];
+      let err_f: [f32; 3] = [lab3[0] - lab2[0], lab3[1] - lab2[1], lab3[2] - lab2[2]];
       // let err_f: [f32; 3] = [lab1[0] - lab2[0], lab1[1] - lab2[1], lab1[2] - lab2[2]];
 
       if n%128 < 127 {
