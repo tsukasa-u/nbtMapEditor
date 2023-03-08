@@ -193,6 +193,7 @@ pub fn search_color_id(src: &[i32], output: &mut [u8], color_map: &[i32], bg: &[
   let mut lab1: [f32; 4] = [0f32; 4];
   let mut lab2: [f32; 4] = [0f32; 4];
   let daynamic_buffer: [[f32; 3]; 16384] = [[0.0; 3]; 16384];
+  console::log_2(&"Logging :".into(), &use_method.into());
   for n in 0..output.len() {
     id = 100i32;
     min = 1000000f32;
